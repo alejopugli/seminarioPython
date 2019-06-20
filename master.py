@@ -5,6 +5,8 @@ from pattern.web import Wiktionary as wik
 from pattern.es import parse, spelling, lexicon
 import string
 from datetime import datetime
+import time
+
 
 """
 MIEMBROS DEL GRUPO:
@@ -20,6 +22,13 @@ BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
 COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
 CANTIDAD = list(range(0,11))
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
+
+
+
+
+def masLarga(dic):
+    sortedwords = sorted(dic.keys(), key=len, reverse=True)
+    return len(sortedwords[0])
 
 
 def reportar(s):
@@ -49,13 +58,22 @@ def cumple(c_sus,c_adj,c_ver,con):
         return True
     
     elif not sus:
-        sg.Popup('Faltan '+str(c_sus-con['sustantivo'])+' sustantivos')
+        if c_sus-con['sustantivo'] > 0:
+            sg.Popup('Faltan '+str(c_sus-con['sustantivo'])+' sustantivos')
+        else:
+            sg.Popup('Sobran '+str((c_sus-con['sustantivo'])*-1)+' sustantivos')
         return False
     elif not adj:
-        sg.Popup('Faltan '+str(c_adj-con['adjetivo'])+' adjetivos')
+        if c_adj-con['adjetivo'] > 0:
+            sg.Popup('Faltan '+str(c_adj-con['adjetivo'])+' adjetivos')
+        else:
+            sg.Popup('Sobran '+str((c_adj-con['adjetivo'])*-1)+' adjetivos')
         return False
     elif not ver:
-        sg.Popup('Faltan '+str(c_ver-con['verbo'])+' verbos')
+        if c_ver-con['verbo'] > 0:
+            sg.Popup('Faltan '+str(c_ver-con['verbo'])+' verbos')
+        else:
+            sg.Popup('Sobran '+str((c_ver-con['verbo'])*-1)+' verbos')
         return False
         
         
@@ -84,7 +102,7 @@ def clasificar(palabra):
     
     elif clasificacion == clasificaciones[6]: #adjetivo
         tipo_pattern = 'adjetivo'
-    
+
     return tipo_pattern
 
 
@@ -118,13 +136,13 @@ sopa_window = sg.Window('SOPA DE LETRAS', ).Layout(sopa_layout).Finalize()
 sopa_window.Disappear()
 
 
-
+#ventana configuracion:
 config_layout = [
                    [sg.Text('PALABRAS'),sg.Input(size=(35,1),key='PALABRA'),sg.Button('Agregar',bind_return_key=True)],
                    [sg.Listbox(values=[],size=(55,6),key='LISTA',select_mode="LISTBOX_SELECT_MODE_single", bind_return_key=True)],
                    [sg.Button('Eliminar')],
                    [sg.Text('\n')],
-                   [sg.Text('                   SUSTANTIVOS   '),sg.Text('ADJETIVOS    '),sg.Text('VERBOS')],
+                   [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
                    [sg.Text('CANTIDAD'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='SUSTANTIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='ADJETIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='VERBOS')],
                    [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1))],                 
                    [sg.Text('\n')],
@@ -139,16 +157,12 @@ config_layout = [
 
 
 
-
-
-    
-
-def generar_sopa(palabras, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
-
+def generar_sopa(dic, longitud, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
+    x=0
     g = sopa_window.FindElement('_GRAPH_')
     
-    filas=16
-    columnas=16
+    filas = longitud*2
+    columnas = filas #matriz cuadrada
     
     if minusculas:
         mayus_minus=string.ascii_lowercase
@@ -160,7 +174,7 @@ def generar_sopa(palabras, orientacion='HORIZONTAL',fuente='Comic',minusculas=Fa
                 box_x = (col * BOX_SIZE + 5) // BOX_SIZE
                 box_y = (row * BOX_SIZE + 3) // BOX_SIZE
                 letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
-                g.DrawText('{}'.format(random.choice(mayus_minus)), letter_location, font=fuente+' '+'25') #se dibuja letra adentro del cuadrado
+                g.DrawText('{}'.format(random.choice(mayus_minus)), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
 
 
 
@@ -179,9 +193,8 @@ def main(argv):
         event, values = config_window.Read()
         if event is None:
             sys.exit()
-        elif event == 'Agregar':
-
             
+        elif event == 'Agregar': #se agrega palabra
 
             ok = False #indica si la palabra se va a agregar a la lista o no
             palabra = values['PALABRA'].lower()
@@ -202,7 +215,8 @@ def main(argv):
                             tipo = clasificar(palabra)
                         else:
                             tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower()
-                        descripcion = sg.PopupGetText('Definicion',)
+                        if tipo != '':   #parche para palabras que califican en pattern como UH que serian interjecciones como 'shola' u 'oh' 
+                          descripcion = sg.PopupGetText('Definicion',)
                     
                     if onPattern(palabra):
                         
@@ -242,18 +256,10 @@ def main(argv):
 
 
 
-
-                        
-            
-
-
-
-        elif event == 'LISTA':
+        elif event == 'LISTA': #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
             sg.Popup('Definicion',dic[values['LISTA'][0]]['descripcion'])
             
         elif event == 'Eliminar':
-            print(values)
-            print(contador)
             if len(list(dic.keys())) > 0:
                 contador[ dic[values['LISTA'][0]] ['tipo'] ] -= 1
                 del dic[values['LISTA'][0]]
@@ -266,15 +272,12 @@ def main(argv):
             c_adjetivos = int(values['ADJETIVOS'])
             c_verbos = int(values['VERBOS'])
 
-
             if cumple(c_sustantivos,c_adjetivos,c_verbos,contador):
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
-            
-                generar_sopa(dic,orientacion,fuente,minusculas)
+                generar_sopa(dic,masLarga(dic),orientacion,fuente,minusculas)
                 break
-
         
     config_window.Close()
     
