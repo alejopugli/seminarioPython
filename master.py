@@ -130,10 +130,14 @@ def parsear_descripcion(con):
 
 #ventana de la sopa de letras:
 sopa_layout = [
-                [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=False)]
+                [sg.Text('',visible=False,size=(50,1),font='Courier 20',key='CANTIDAD')],
+                [sg.Button('AYUDA',key='HELP',visible=False)],
+                [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=True),
+                 sg.Listbox(values=[],size=(100,10),key='PALABRAS',font='Comic 18',visible=True)]
               ]
-sopa_window = sg.Window('SOPA DE LETRAS', ).Layout(sopa_layout).Finalize()
+sopa_window = sg.Window('SOPA DE LETRAS', resizable=True).Layout(sopa_layout).Finalize()
 sopa_window.Disappear()
+
 
 
 #ventana configuracion:
@@ -146,35 +150,56 @@ config_layout = [
                    [sg.Text('CANTIDAD'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='SUSTANTIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='ADJETIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='VERBOS')],
                    [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1))],                 
                    [sg.Text('\n')],
+                   [sg.Text(' '*27+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
                    [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
                    [sg.Text(' '*26+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
                    [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
                    [sg.Text('\n')],
-                   [sg.Checkbox('SOLO MINUSCULAS',key='MINUSCULAS')],                 
-                   [sg.Checkbox('AYUDA',key='AYUDA')],
-                   [sg.Button('LISTO',pad=(179,1))],
+                   [sg.Checkbox('SOLO MINUSCULAS',key='MINUSCULAS')],
+                   [sg.Button('LISTO',pad=(179,1))]
                 ]
 
 
 
 def generar_sopa(dic, longitud, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
-    x=0
+    
     g = sopa_window.FindElement('_GRAPH_')
     
     filas = longitud*2
     columnas = filas #matriz cuadrada
+
+    lista = list(dic.keys())
+
     
     if minusculas:
         mayus_minus=string.ascii_lowercase
     else:
         mayus_minus=string.ascii_uppercase
+        lista = [x.upper() for x in lista]
+        
     for row in range(filas):
+        
+        ultimo = False
+        if len(lista) == 1:
+            ultimo = True
+        if len(lista) > 0:
+            palabra = random.choice(lista)
+            lista.remove(palabra)
+            pos = 0
+        termine=False
         for col in range(columnas):
                 g.DrawRectangle((col * BOX_SIZE + 5, row * BOX_SIZE + 3), (col * BOX_SIZE + BOX_SIZE + 5, row * BOX_SIZE + BOX_SIZE + 3), line_color='black') #se dibuja cuadrado
                 box_x = (col * BOX_SIZE + 5) // BOX_SIZE
                 box_y = (row * BOX_SIZE + 3) // BOX_SIZE
                 letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
-                g.DrawText('{}'.format(random.choice(mayus_minus)), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
+                if (len(lista) > 0 or ultimo) and pos < len(palabra) and not termine:
+                    g.DrawText('{}'.format(palabra[pos]), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
+                    pos += 1
+                    if len(palabra) == pos:
+                        termine = True
+                else:
+                    pos = 0
+                    g.DrawText('{}'.format(random.choice(mayus_minus)), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
 
 
 
@@ -273,6 +298,7 @@ def main(argv):
             c_verbos = int(values['VERBOS'])
 
             if cumple(c_sustantivos,c_adjetivos,c_verbos,contador):
+                ayuda = values['AYUDA']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
@@ -282,6 +308,25 @@ def main(argv):
     config_window.Close()
     
     sopa_window.Reappear()
+
+
+
+
+    if ayuda != 'TOTAL':
+        sopa_window.FindElement('PALABRAS').Update(visible=False)
+        
+    if ayuda == 'TOTAL':
+        sopa_window.FindElement('PALABRAS').Update(values=list(dic.keys()))
+    elif ayuda =='PARCIAL':
+        sopa_window.FindElement('HELP').Update(visible=True)
+        ayudas = [ ]
+        for i in dic.keys():
+            descripcion = dic[i]['descripcion']
+            ayudas.append(descripcion)
+    else:
+        cadena='SUSTANTIVOS:'+str(contador['sustantivo'])+'  ADJETIVOS:'+str(contador['adjetivo'])+'  VERBOS:'+str(contador['verbo'])
+        sopa_window.FindElement('CANTIDAD').Update(value=cadena, visible=True)
+        
     
 
     while True:
@@ -291,6 +336,7 @@ def main(argv):
             break
         mouse = values['_GRAPH_']
 
+
         if event == '_GRAPH_':
             if mouse == (None, None):
                 continue
@@ -298,6 +344,10 @@ def main(argv):
             box_y = mouse[1]//BOX_SIZE
             letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
             print(box_x, box_y)
+            
+        if event == 'HELP':
+            descripcion = random.choice(ayudas)
+            sg.Popup('Ayuda',descripcion)
 
 
 
