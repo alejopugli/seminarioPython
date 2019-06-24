@@ -24,6 +24,27 @@ CANTIDAD = list(range(0,11))
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
 
 
+def tipoAyuda(ayuda, contador, ayudas, dic):
+    if ayuda != 'TOTAL':
+        sopa_window.FindElement('PALABRAS').Update(visible=False)
+        
+    if ayuda == 'TOTAL':
+        sopa_window.FindElement('PALABRAS').Update(values=list(dic.keys()))
+    elif ayuda =='PARCIAL':
+        sopa_window.FindElement('HELP').Update(visible=True)
+        for i in dic.keys():
+            descripcion = dic[i]['descripcion']
+            ayudas.append(descripcion)
+    else:
+        cadena='SUSTANTIVOS:'+str(contador['sustantivo'])+'  ADJETIVOS:'+str(contador['adjetivo'])+'  VERBOS:'+str(contador['verbo'])
+        sopa_window.FindElement('CANTIDAD').Update(value=cadena, visible=True)
+
+
+def esValido(palabra):
+	if palabra.lower() not in ['adjetivo','sustantivo','verbo']:
+		return False
+	else:
+		return True
 
 
 def masLarga(dic):
@@ -186,7 +207,9 @@ def generar_sopa(dic, longitud, orientacion='HORIZONTAL',fuente='Comic',minuscul
             palabra = random.choice(lista)
             lista.remove(palabra)
             pos = 0
+            
         termine=False
+        
         for col in range(columnas):
                 g.DrawRectangle((col * BOX_SIZE + 5, row * BOX_SIZE + 3), (col * BOX_SIZE + BOX_SIZE + 5, row * BOX_SIZE + BOX_SIZE + 3), line_color='black') #se dibuja cuadrado
                 box_x = (col * BOX_SIZE + 5) // BOX_SIZE
@@ -223,24 +246,39 @@ def main(argv):
 
             ok = False #indica si la palabra se va a agregar a la lista o no
             palabra = values['PALABRA'].lower()
-            articulo = engine.article(palabra)
+            articulo = None
+            for i in range (0,3): #3 reconexciones, una cada 5 segundos
+                try:
+                    articulo = engine.article(palabra)
+                    break
+                except:
+                    time.sleep(5)
+            
+                
+                    
 
             if palabra not in config_window.FindElement('LISTA').GetListValues():
                 
             
-                if articulo != None: #si no es None esta en wiktionary
+                if articulo != None and  engine.article(palabra).sections[1].title == 'Español': #si no es None esta en wiktionary
+                                                                        #y es una palabra en español (por que puede encontrar palabras en otro idioma)
                     print('Esta en wiktionary')
 
                     try:
                         seccion = articulo.sections[3].content
                         tipo = parsear_tipo(seccion)
                         descripcion = parsear_descripcion(seccion)
-                    except:
-                        if onPattern(palabra):
-                            tipo = clasificar(palabra)
+                    except: #si esta en wiktionary pero no pudo parsear la definicion y el tipo...
+                        if onPattern(palabra): 
+                            tipo = clasificar(palabra) #saca el tipo de pattern
+                            print (tipo+'s')
                         else:
-                            tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower()
-                        if tipo != '':   #parche para palabras que califican en pattern como UH que serian interjecciones como 'shola' u 'oh' 
+                            tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower() #si no encontro la palabra en pattern se ingresa el tipo manualmente
+                            while not esValido(tipo):                                                                     
+                                tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower()
+                            tipo = tipo.lower()
+                            
+                        if tipo != '':   #parche para palabras que califican en pattern como UH que serian interjecciones como 'hola' u 'oh' y otros tipos que no nos competen
                           descripcion = sg.PopupGetText('Definicion',)
                     
                     if onPattern(palabra):
@@ -259,9 +297,10 @@ def main(argv):
                 elif onPattern(palabra): #si fue None se pureba si esta en pattern
                     print('Esta en pattern')
                     tipo = clasificar(palabra)
-                    print(tipo,' entro por patter')
-                    descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    ok = True
+                    print(tipo,'entro por pattern')
+                    if tipo != '':
+                        descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
+                        ok = True
 
                 if ok: #Estaba en pattern o wiktionary entonces se agrega
                     palabras.append(palabra)
@@ -310,24 +349,8 @@ def main(argv):
     sopa_window.Reappear()
 
 
-
-
-    if ayuda != 'TOTAL':
-        sopa_window.FindElement('PALABRAS').Update(visible=False)
-        
-    if ayuda == 'TOTAL':
-        sopa_window.FindElement('PALABRAS').Update(values=list(dic.keys()))
-    elif ayuda =='PARCIAL':
-        sopa_window.FindElement('HELP').Update(visible=True)
-        ayudas = [ ]
-        for i in dic.keys():
-            descripcion = dic[i]['descripcion']
-            ayudas.append(descripcion)
-    else:
-        cadena='SUSTANTIVOS:'+str(contador['sustantivo'])+'  ADJETIVOS:'+str(contador['adjetivo'])+'  VERBOS:'+str(contador['verbo'])
-        sopa_window.FindElement('CANTIDAD').Update(value=cadena, visible=True)
-        
-    
+    ayudas = [ ]
+    tipoAyuda(ayuda,contador,ayudas,dic)
 
     while True:
         event, values = sopa_window.Read()
