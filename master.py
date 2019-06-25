@@ -2,7 +2,7 @@ import sys
 import PySimpleGUI as sg
 import random
 from pattern.web import Wiktionary as wik
-from pattern.es import parse, spelling, lexicon
+from pattern.es import parse, spelling, lexicon, singularize
 import string
 from datetime import datetime
 import time
@@ -18,7 +18,7 @@ PISONI, FELIPE
 
 
 
-BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
+BOX_SIZE = 20 #constante que representa el tamaño de un "casillero"
 COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
 CANTIDAD = list(range(0,11))
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
@@ -214,7 +214,7 @@ def generar_sopa(dic, longitud, orientacion='HORIZONTAL',fuente='Comic',minuscul
                 g.DrawRectangle((col * BOX_SIZE + 5, row * BOX_SIZE + 3), (col * BOX_SIZE + BOX_SIZE + 5, row * BOX_SIZE + BOX_SIZE + 3), line_color='black') #se dibuja cuadrado
                 box_x = (col * BOX_SIZE + 5) // BOX_SIZE
                 box_y = (row * BOX_SIZE + 3) // BOX_SIZE
-                letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+                letter_location = (box_x * BOX_SIZE + 14, box_y * BOX_SIZE + 13)
                 if (len(lista) > 0 or ultimo) and pos < len(palabra) and not termine:
                     g.DrawText('{}'.format(palabra[pos]), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
                     pos += 1
@@ -249,13 +249,13 @@ def main(argv):
             articulo = None
             for i in range (0,3): #3 reconexciones, una cada 5 segundos
                 try:
-                    articulo = engine.article(palabra)
+                    articulo = engine.article(singularize(palabra))
                     break
                 except:
                     time.sleep(5)
             
                 
-                    
+            #if len(palabra)>      
 
             if palabra not in config_window.FindElement('LISTA').GetListValues():
                 
@@ -270,15 +270,14 @@ def main(argv):
                         descripcion = parsear_descripcion(seccion)
                     except: #si esta en wiktionary pero no pudo parsear la definicion y el tipo...
                         if onPattern(palabra): 
-                            tipo = clasificar(palabra) #saca el tipo de pattern
-                            print (tipo+'s')
+                            tipo = clasificar(singularize(palabra)) #saca el tipo de pattern
                         else:
                             tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower() #si no encontro la palabra en pattern se ingresa el tipo manualmente
                             while not esValido(tipo):                                                                     
                                 tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower()
                             tipo = tipo.lower()
                             
-                        if tipo != '':   #parche para palabras que califican en pattern como UH que serian interjecciones como 'hola' u 'oh' y otros tipos que no nos competen
+                        if tipo != '':   #parche para palabras que califican en pattern como UH que serian interjecciones como 'hola' u 'oh', y otros tipos que no nos competen
                           descripcion = sg.PopupGetText('Definicion',)
                     
                     if onPattern(palabra):
@@ -320,14 +319,20 @@ def main(argv):
 
 
 
+
+
         elif event == 'LISTA': #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
             sg.Popup('Definicion',dic[values['LISTA'][0]]['descripcion'])
+
+
             
         elif event == 'Eliminar':
             if len(list(dic.keys())) > 0:
                 contador[ dic[values['LISTA'][0]] ['tipo'] ] -= 1
                 del dic[values['LISTA'][0]]
                 config_window.FindElement('LISTA').Update(values=list(dic.keys()))
+
+
 
         elif event == 'LISTO':
 
@@ -365,7 +370,7 @@ def main(argv):
                 continue
             box_x = mouse[0]//BOX_SIZE
             box_y = mouse[1]//BOX_SIZE
-            letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+            letter_location = (box_x * BOX_SIZE + 14, box_y * BOX_SIZE + 13)
             print(box_x, box_y)
             
         if event == 'HELP':
