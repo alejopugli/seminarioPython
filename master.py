@@ -18,9 +18,9 @@ PISONI, FELIPE
 
 
 
-BOX_SIZE = 20 #constante que representa el tamaño de un "casillero"
+BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
 COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
-CANTIDAD = list(range(0,11))
+CANTIDAD = list(range(0,6))
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
 
 
@@ -180,49 +180,95 @@ config_layout = [
                    [sg.Button('LISTO',pad=(179,1))]
                 ]
 
-
-
-def generar_sopa(dic, longitud, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
+def decidir(i,filas,lista,palabra,dispersion):
+    if random.choice(dispersion) and len(lista) > 0:
+        if len(palabra) <= filas - i:
+            print (filas - i)
+            return True
+        else:
+            return False
+    else:
+        return False
     
-    g = sopa_window.FindElement('_GRAPH_')
     
-    filas = longitud*2
-    columnas = filas #matriz cuadrada
+
+def generar_sopa(dic,longitud, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
 
     lista = list(dic.keys())
 
+    dispersion = [True]
+    m = lambda l: 1 if l >= 8 else -2
+    
+    for j in range(longitud-m(longitud)):
+        dispersion.append(False)
+    print(dispersion)
+    
+    #"dispersion" es la probabilidad de que de positiva la decision de poner
+    #una palabra en una fila. Notar que mientras mas False haya menor la probabilidad
+    #de poner una palabra en cierta linea, por lo cual la dispersion de las palabras
+    #tiende a ser mayor. La cantidad de Flase esta determinada por el tamaño de la grilla.
+    #En las pruebas realizadas longitud-1 de "Falses" fue un numero que permitio una dispersion
+    #aceptable sin que queden palabras afuera cuando la matriz era de 16*16 o mayor, mientras que
+    #cuando la matriz era mas chica para que la dispersion sea mas grande se requieren mas Falses
+    #por lo que longitud-(-2) = longitud + 2 dio resultados de dispersion aceptables
+
+    filas = longitud * 2
+    columnas = filas
     
     if minusculas:
         mayus_minus=string.ascii_lowercase
     else:
         mayus_minus=string.ascii_uppercase
         lista = [x.upper() for x in lista]
+
+    matriz = [ ]
+
+    for i in range(filas):
+        row = [ ]
+        k=0
+        while k < filas:
+            if len(lista) > 0 :
+                palabra = random.choice(lista)
+            if decidir(k,filas,lista,palabra,dispersion):
+                lista.remove(palabra)
+                n = 0
+                while k < filas and n < len(palabra):
+                    row.append(palabra[n])
+                    n += 1
+                    k += 1
+            else:
+                row.append(random.choice(mayus_minus))
+                k += 1
+        
+        matriz.append(row)
+        
+
+    print(matriz)
+    dibujar_sopa(matriz,masLarga(dic),fuente)
+
+    return matriz
+
+
+
+
+
+
+def dibujar_sopa(matriz, longitud, fuente='Comic'):
+    
+    g = sopa_window.FindElement('_GRAPH_')
+    
+    filas = longitud*2
+    columnas = filas #matriz cuadrada
+
         
     for row in range(filas):
-        
-        ultimo = False
-        if len(lista) == 1:
-            ultimo = True
-        if len(lista) > 0:
-            palabra = random.choice(lista)
-            lista.remove(palabra)
-            pos = 0
-            
-        termine=False
-        
+    
         for col in range(columnas):
                 g.DrawRectangle((col * BOX_SIZE + 5, row * BOX_SIZE + 3), (col * BOX_SIZE + BOX_SIZE + 5, row * BOX_SIZE + BOX_SIZE + 3), line_color='black') #se dibuja cuadrado
                 box_x = (col * BOX_SIZE + 5) // BOX_SIZE
                 box_y = (row * BOX_SIZE + 3) // BOX_SIZE
-                letter_location = (box_x * BOX_SIZE + 14, box_y * BOX_SIZE + 13)
-                if (len(lista) > 0 or ultimo) and pos < len(palabra) and not termine:
-                    g.DrawText('{}'.format(palabra[pos]), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
-                    pos += 1
-                    if len(palabra) == pos:
-                        termine = True
-                else:
-                    pos = 0
-                    g.DrawText('{}'.format(random.choice(mayus_minus)), letter_location, font=fuente+' '+str(BOX_SIZE)) #se dibuja letra adentro del cuadrado
+                letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+                g.DrawText('{}'.format(matriz[row][col]), letter_location, font=fuente+' '+str(BOX_SIZE)) 
 
 
 
@@ -346,7 +392,8 @@ def main(argv):
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
-                generar_sopa(dic,masLarga(dic),orientacion,fuente,minusculas)
+                longitud = masLarga(dic)
+                matriz = generar_sopa(dic,longitud,orientacion,fuente,minusculas)
                 break
         
     config_window.Close()
@@ -357,25 +404,32 @@ def main(argv):
     ayudas = [ ]
     tipoAyuda(ayuda,contador,ayudas,dic)
 
+    selected = ''
     while True:
         event, values = sopa_window.Read()
         print(event, values)
         if event is None:
             break
         mouse = values['_GRAPH_']
-
+        time.sleep(0.6)
 
         if event == '_GRAPH_':
             if mouse == (None, None):
                 continue
             box_x = mouse[0]//BOX_SIZE
             box_y = mouse[1]//BOX_SIZE
-            letter_location = (box_x * BOX_SIZE + 14, box_y * BOX_SIZE + 13)
+            letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
             print(box_x, box_y)
+            try:
+                selected += matriz[box_y][box_x].lower()
+            except:
+                pass
             
         if event == 'HELP':
             descripcion = random.choice(ayudas)
             sg.Popup('Ayuda',descripcion)
+
+        print (selected)
 
 
 
