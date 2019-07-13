@@ -1,6 +1,7 @@
 import sys
 import time
 import json
+import datetime
 import Temperatura
 
 """
@@ -14,29 +15,31 @@ def leerArch():
    try:
       arch = open('data.json','r+')
    except PermissionError:
-      print('El archivo no puede ser abierto con sus permisos!')
+      print('¡El archivo no puede ser abierto con sus permisos!')
    except FileNotFoundError:
       print('El archivo no se encontró.')     
    else:
       return arch
    return None
 
-def leerOficinas():
-   for o in range(1,OFICINAS):
-      dic["oficina"+str(o)] = leerADHT()
+def leerOficinas(ofi,temp,dic):
+   for o in range(1,ofi):
+      dic["oficina"+str(o)].apend(temp.datosSensor())
    return dic
 
 def main(argv):
+   ofi = argv[0]
    t = Temperatura()
    arch = leerArch()
    if (arch is not None):
-      json.dump(t.datosSensor(),arch,indent=4)
+      datos = json.load(arch)
       while True:
+         leerOficinas(ofi,t,datos)
+         print('Esperando 1')
          time.sleep(60)
-         json.dump(t.datosSensor(),arch,indent=4)
       close(arch)
    else:
-      print('Error en el archivo')
+      print('Error en el archivo, saliendo...')
 
 if __name__ == "__main__":
     main(sys.argv[1:])
