@@ -1,8 +1,7 @@
 import sys
 import time
-import Adafruit_DHT as adht
 import json
-import date
+import Temperatura
 
 """
 MIEMBROS DEL GRUPO:
@@ -10,12 +9,6 @@ CRIS, SEBASTIAN AGUSTIN
 PUGLIESE, ALEJO EZEQUIEL
 PISONI, FELIPE
 """
-
-OFICINAS = 10
-
-def leerADHT():
-   humedad, temperatura, fecha = adht.read_retry(),date.today()
-   return {'temperatura':temperatura,'humedad':humedad,'fecha':fecha}
 
 def leerArch():
    try:
@@ -30,16 +23,17 @@ def leerArch():
 
 def leerOficinas():
    for o in range(1,OFICINAS):
-      dic['oficina'+str(o)] = leerADHT()
+      dic["oficina"+str(o)] = leerADHT()
    return dic
 
 def main(argv):
+   t = Temperatura()
    arch = leerArch()
    if (arch is not None):
-      json.dump(leerOficinas(),arch,indent=4)
+      json.dump(t.datosSensor(),arch,indent=4)
       while True:
          time.sleep(60)
-         json.dump(leerOficinas(),arch,indent=4)
+         json.dump(t.datosSensor(),arch,indent=4)
       close(arch)
    else:
       print('Error en el archivo')
