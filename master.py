@@ -137,7 +137,6 @@ def parsear_tipo(con):
     return tipo
 
 def parsear_descripcion(con):
-    tipo=''
     i=0
     while con[i] != '1':
         i += 1
@@ -169,7 +168,7 @@ config_layout = [
                    [sg.Text('\n')],
                    [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
                    [sg.Text('CANTIDAD'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='SUSTANTIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='ADJETIVOS'),sg.InputCombo(values=CANTIDAD,default_value=CANTIDAD[1],size=(10,1),key='VERBOS')],
-                   [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1)),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1))],                 
+                   [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
                    [sg.Text('\n')],
                    [sg.Text(' '*27+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
                    [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
@@ -213,7 +212,6 @@ def generar_sopa(dic,longitud, orientacion='HORIZONTAL',fuente='Comic',minuscula
     #por lo que longitud-(-2) = longitud + 2 dio resultados de dispersion aceptables
 
     filas = longitud * 2
-    columnas = filas
     
     if minusculas:
         mayus_minus=string.ascii_lowercase
@@ -276,6 +274,8 @@ def main(argv):
 
     
     engine=wik(language='es')
+
+    dic_colores = {'ROJO':'red','AMARILLO':'yellow','VERDE':'green','AZUL':'blue','ROSA':'pink','VIOLETA':'purple'}
 
     config_window = sg.Window('CONFIGURACION', background_color=None).Layout(config_layout)
     dic = {}
@@ -388,6 +388,9 @@ def main(argv):
             c_verbos = int(values['VERBOS'])
 
             if cumple(c_sustantivos,c_adjetivos,c_verbos,contador):
+                col_sus = dic_colores[values['COL_SUS']]
+                col_adj = dic_colores[values['COL_ADJ']]
+                col_ver = dic_colores[values['COL_VER']]
                 ayuda = values['AYUDA']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
@@ -403,8 +406,10 @@ def main(argv):
 
     ayudas = [ ]
     tipoAyuda(ayuda,contador,ayudas,dic)
+    g = sopa_window.FindElement('_GRAPH_')
 
-    selected = ''
+    boxX_ant = None
+    boxY_ant = None
     while True:
         event, values = sopa_window.Read()
         print(event, values)
@@ -412,24 +417,73 @@ def main(argv):
             break
         mouse = values['_GRAPH_']
         time.sleep(0.6)
-
         if event == '_GRAPH_':
             if mouse == (None, None):
                 continue
             box_x = mouse[0]//BOX_SIZE
             box_y = mouse[1]//BOX_SIZE
+            palabra=''
             letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
             print(box_x, box_y)
-            try:
-                selected += matriz[box_y][box_x].lower()
-            except:
-                pass
-            
+            if boxX_ant == None and boxY_ant == None:
+                print('entre primer if')
+                g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
+                boxY_ant = box_y
+                boxX_ant = box_x
+            elif box_y == boxY_ant and box_x > boxX_ant:
+                try:
+                    print('entre segundo if')
+                    #if( box_x > boxX_ant):
+                    for i in range(boxX_ant, box_x+1):
+                        letra = matriz[box_y][i]
+                        palabra += letra.lower()
+                        print(palabra)
+                    '''else:
+                        for i in reversed(range(box_x, boxX_ant+1)):
+                            letra = matriz[box_y][i]
+                            palabra += letra.lower()
+                            print(palabra)
+                        palabra = palabra[::-1]
+                        print(palabra)'''
+                    if palabra in dic.keys():
+                        tipo = dic[palabra]['tipo']
+                        if tipo == 'sustantivo':
+                            color = col_sus
+                            c_sustantivos-=1
+                        elif tipo == 'adjetivo':
+                            color = col_adj
+                            c_adjetivos-=1
+                        elif tipo == 'verbo':
+                            color = col_ver
+                            c_verbos-=1
+                    else:
+                        color = 'black'
+                    for i in range(boxX_ant, box_x+1):
+                        letter_location = (i * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+                        g.DrawText('{}'.format(matriz[box_y][i]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
+                    boxY_ant = box_y
+                    boxX_ant = box_x
+                except:
+                    pass
+            else:
+                print('entre tercer if')
+                letter_location_ant= (boxX_ant * BOX_SIZE + 18, boxY_ant * BOX_SIZE + 17)
+                try:
+                    g.DrawText('{}'.format(matriz[boxY_ant][boxX_ant]), letter_location_ant,color="black", font=fuente+' '+str(BOX_SIZE))                    
+                    g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
+                except:
+                    pass
+                boxY_ant = box_y
+                boxX_ant = box_x
+        victoria = (c_sustantivos < 1 and c_adjetivos < 1 and c_verbos < 1)
+        if(victoria):
+            sg.Popup('Ganaste!')
+            break
         if event == 'HELP':
             descripcion = random.choice(ayudas)
             sg.Popup('Ayuda',descripcion)
 
-        print (selected)
+
 
 
 
@@ -438,4 +492,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
