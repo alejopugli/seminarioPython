@@ -410,6 +410,7 @@ def main(argv):
 
     boxX_ant = None
     boxY_ant = None
+    Borrar=True
     while True:
         event, values = sopa_window.Read()
         print(event, values)
@@ -430,21 +431,22 @@ def main(argv):
                 g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
                 boxY_ant = box_y
                 boxX_ant = box_x
-            elif box_y == boxY_ant and box_x > boxX_ant:
+            elif box_y == boxY_ant and box_x != boxX_ant:
                 try:
                     print('entre segundo if')
-                    #if( box_x > boxX_ant):
-                    for i in range(boxX_ant, box_x+1):
-                        letra = matriz[box_y][i]
-                        palabra += letra.lower()
-                        print(palabra)
-                    '''else:
+                    if( box_x > boxX_ant):
+                        for i in range(boxX_ant, box_x+1):
+                            letra = matriz[box_y][i]
+                            palabra += letra.lower()
+                            print(palabra)
+                    else:
                         for i in reversed(range(box_x, boxX_ant+1)):
                             letra = matriz[box_y][i]
                             palabra += letra.lower()
                             print(palabra)
                         palabra = palabra[::-1]
-                        print(palabra)'''
+                        atras = True
+                        print(palabra)
                     if palabra in dic.keys():
                         tipo = dic[palabra]['tipo']
                         if tipo == 'sustantivo':
@@ -458,23 +460,31 @@ def main(argv):
                             c_verbos-=1
                     else:
                         color = 'black'
-                    for i in range(boxX_ant, box_x+1):
-                        letter_location = (i * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
-                        g.DrawText('{}'.format(matriz[box_y][i]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
+                    if (atras):
+                        for i in range(box_x, boxX_ant+1):
+                            letter_location = (i * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+                            g.DrawText('{}'.format(matriz[box_y][i]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
+                    else:
+                        for i in range(boxX_ant, box_x+1):
+                            letter_location = (i * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
+                            g.DrawText('{}'.format(matriz[box_y][i]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
                     boxY_ant = box_y
                     boxX_ant = box_x
+                    Borrar = False
                 except:
                     pass
             else:
                 print('entre tercer if')
                 letter_location_ant= (boxX_ant * BOX_SIZE + 18, boxY_ant * BOX_SIZE + 17)
                 try:
-                    g.DrawText('{}'.format(matriz[boxY_ant][boxX_ant]), letter_location_ant,color="black", font=fuente+' '+str(BOX_SIZE))                    
+                    if (Borrar) :
+                        g.DrawText('{}'.format(matriz[boxY_ant][boxX_ant]), letter_location_ant,color="black", font=fuente+' '+str(BOX_SIZE))                    
                     g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
                 except:
                     pass
                 boxY_ant = box_y
                 boxX_ant = box_x
+                Borrar=True
         victoria = (c_sustantivos < 1 and c_adjetivos < 1 and c_verbos < 1)
         if(victoria):
             sg.Popup('Ganaste!')
@@ -482,11 +492,6 @@ def main(argv):
         if event == 'HELP':
             descripcion = random.choice(ayudas)
             sg.Popup('Ayuda',descripcion)
-
-
-
-
-
     sopa_window.Close()
 
 
