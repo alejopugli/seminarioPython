@@ -1,3 +1,5 @@
+#!/usr/bin/env python36
+
 import sys
 import PySimpleGUI as sg
 import random
@@ -14,9 +16,6 @@ CRIS, SEBASTIAN AGUSTIN
 PUGLIESE, ALEJO EZEQUIEL
 PISONI, FELIPE
 """
-
-
-
 
 BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
 COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
@@ -202,14 +201,16 @@ def generar_sopa(dic,longitud, orientacion='HORIZONTAL',fuente='Comic',minuscula
         dispersion.append(False)
     print(dispersion)
     
-    #"dispersion" es la probabilidad de que de positiva la decision de poner
-    #una palabra en una fila. Notar que mientras mas False haya menor la probabilidad
-    #de poner una palabra en cierta linea, por lo cual la dispersion de las palabras
-    #tiende a ser mayor. La cantidad de Flase esta determinada por el tamaño de la grilla.
-    #En las pruebas realizadas longitud-1 de "Falses" fue un numero que permitio una dispersion
-    #aceptable sin que queden palabras afuera cuando la matriz era de 16*16 o mayor, mientras que
-    #cuando la matriz era mas chica para que la dispersion sea mas grande se requieren mas Falses
-    #por lo que longitud-(-2) = longitud + 2 dio resultados de dispersion aceptables
+    '''
+    "dispersion" es la probabilidad de que de positiva la decision de poner
+    una palabra en una fila. Notar que mientras mas False haya menor la probabilidad
+    de poner una palabra en cierta linea, por lo cual la dispersion de las palabras
+    tiende a ser mayor. La cantidad de Flase esta determinada por el tamaño de la grilla.
+    En las pruebas realizadas longitud-1 de "Falses" fue un numero que permitio una dispersion
+    aceptable sin que queden palabras afuera cuando la matriz era de 16*16 o mayor, mientras que
+    cuando la matriz era mas chica para que la dispersion sea mas grande se requieren mas Falses
+    por lo que longitud-(-2) = longitud + 2 dio resultados de dispersion aceptables
+    '''
 
     filas = longitud * 2
     
@@ -439,6 +440,7 @@ def main(argv):
                             letra = matriz[box_y][i]
                             palabra += letra.lower()
                             print(palabra)
+                        atras = False
                     else:
                         for i in reversed(range(box_x, boxX_ant+1)):
                             letra = matriz[box_y][i]
