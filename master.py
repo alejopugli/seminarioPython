@@ -151,7 +151,7 @@ def parsear_descripcion(con):
 sopa_layout = [
                 [sg.Text('',visible=False,size=(50,1),font='Courier 20',key='CANTIDAD')],
                 [sg.Button('AYUDA',key='HELP',visible=False)],
-                [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=True),
+                [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=False),
                  sg.Listbox(values=[],size=(100,10),key='PALABRAS',font='Comic 18',visible=True)]
               ]
 sopa_window = sg.Window('SOPA DE LETRAS', resizable=True).Layout(sopa_layout).Finalize()
@@ -188,7 +188,9 @@ def decidir(i,filas,lista,palabra,dispersion):
     else:
         return False
     
-    
+""" 
+def valor(longitud, cant_palabras):
+"""
 
 def generar_sopa(dic,longitud, orientacion='HORIZONTAL',fuente='Comic',minusculas=False):
 
@@ -197,7 +199,8 @@ def generar_sopa(dic,longitud, orientacion='HORIZONTAL',fuente='Comic',minuscula
     dispersion = [True]
     m = lambda l: 1 if l >= 8 else -2
     
-    for j in range(longitud-m(longitud)):
+    #for j in range(longitud-valor(longitud,len(lista))):
+    for j in range(longitud - m(longitud)):
         dispersion.append(False)
     print(dispersion)
     
@@ -418,7 +421,6 @@ def main(argv):
         if event is None:
             break
         mouse = values['_GRAPH_']
-        time.sleep(0.6)
         if event == '_GRAPH_':
             if mouse == (None, None):
                 continue
