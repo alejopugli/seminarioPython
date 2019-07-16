@@ -1,0 +1,7 @@
+{
+   "oficina1":[{"temp":32,"humedad":21,"fecha":"Wed 01 May, 19"},{"temp":4000,"humedad":88,"fecha":"Thu 02 May, 19"},{"temp":10,"humedad":11,"fecha":"Fri 03 May, 19"},{"temp":3212,"humedad":44,"fecha":"Sat 04 May, 19"}],
+   "oficina2":[{"temp":1,"humedad":2,"fecha":"Wed 01 May, 19"},{"temp":4,"humedad":56,"fecha":"Thu 02 May, 19"},{"temp":32,"humedad":19,"fecha":"Fri 03 May, 19"},{"temp":0,"humedad":6,"fecha":"Sat 04 May, 19"}],
+   "oficina3":[{"temp":5,"humedad":21,"fecha":"Wed 01 May, 19"},{"temp":77,"humedad":5,"fecha":"Thu 02 May, 19"},{"temp":21,"humedad":44,"fecha":"Fri 03 May, 19"},{"temp":12,"humedad":90,"fecha":"Sat 04 May, 19"}],
+   "oficina4":[{"temp":-10,"humedad":52,"fecha":"Wed 01 May, 19"},{"temp":33,"humedad":34,"fecha":"Thu 02 May, 19"},{"temp":11,"humedad":89,"fecha":"Fri 03 May, 19"},{"temp":19,"humedad":4,"fecha":"Sat 04 May, 19"}],
+   "oficina5":[{"temp":19,"humedad":30,"fecha":"Wed 01 May, 19"},{"temp":20,"humedad":60,"fecha":"Thu 02 May, 19"},{"temp":27,"humedad":89,"fecha":"Fri 03 May, 19"},{"temp":15,"humedad":98,"fecha":"Sat 04 May, 19"}]
+}
