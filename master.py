@@ -8,7 +8,6 @@ from pattern.es import parse, spelling, lexicon, singularize
 import string
 from datetime import datetime
 import time
-import json
 
 
 """
@@ -22,26 +21,6 @@ BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
 COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
 CANTIDAD = list(range(0,6))
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
-
-def abrirArchivo():
-   try:
-      file = open(nomArch, 'r')
-   except PermissionError:
-      win.Popup('No tiene los permisos para leer el archivo de oficinas.')
-   except FileNotFoundError:
-      win.Popup('No se encontro el archivo de oficinas'.)
-   else:
-      return file
-   return None
-
-def cargarJSON(win,nomArch = 'datos.oficinas.json'):
-   arch = abrirArchivo(win,nomArch)
-   if (arch is not None):
-      datosJson = json.load(arch)
-      return datosJson
-   else:
-      return None
-
 
 
 def tipoAyuda(ayuda, contador, ayudas, dic):
@@ -178,7 +157,7 @@ sopa_layout = [
 sopa_window = sg.Window('SOPA DE LETRAS', resizable=True).Layout(sopa_layout).Finalize()
 sopa_window.Disappear()
 
-oficinas = cargarJSON(config_window)
+
 
 #ventana configuracion:
 config_layout = [
@@ -193,7 +172,7 @@ config_layout = [
                    [sg.Text(' '*27+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
                    [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
                    [sg.Text(' '*26+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
-                   [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=list(oficinas.keys()),size=(15,1))], #values=list(oficinas.keys())                
+                   [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
                    [sg.Text('\n')],
                    [sg.Checkbox('SOLO MINUSCULAS',key='MINUSCULAS')],
                    [sg.Button('LISTO',pad=(179,1))]
@@ -297,9 +276,8 @@ def dibujar_sopa(matriz, longitud, fuente='Comic'):
 
 def main(argv):
 
-   
     
-   engine=wik(language='es')
+    engine=wik(language='es')
 
     dic_colores = {'ROJO':'red','AMARILLO':'yellow','VERDE':'green','AZUL':'blue','ROSA':'pink','VIOLETA':'purple'}
 
@@ -327,7 +305,7 @@ def main(argv):
                     time.sleep(5)
             
                 
-            
+            #if len(palabra)>      
 
             if palabra not in config_window.FindElement('LISTA').GetListValues():
                 
@@ -421,7 +399,6 @@ def main(argv):
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
-                ofiAProcesar = values['OFICINA']
                 longitud = masLarga(dic)
                 matriz = generar_sopa(dic,longitud,orientacion,fuente,minusculas)
                 break
@@ -430,8 +407,7 @@ def main(argv):
     
     sopa_window.Reappear()
 
-    listaTemperaturas = list(map(lambda x: int(x[temp]),oficinas[ofiAProcesar]))
-    temPromedio = sum(listaTemperaturas)/len(listaTemperaturas)
+
     ayudas = [ ]
     tipoAyuda(ayuda,contador,ayudas,dic)
     g = sopa_window.FindElement('_GRAPH_')
@@ -454,6 +430,7 @@ def main(argv):
             letter_location = (box_x * BOX_SIZE + 18, box_y * BOX_SIZE + 17)
             print(box_x, box_y)
             if boxX_ant == None and boxY_ant == None:
+                print('entre primer if')
                 g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
                 boxY_ant = box_y
                 boxX_ant = box_x
@@ -500,58 +477,18 @@ def main(argv):
                     Borrar = False
                 except:
                     pass
-            elif box_x == boxX_ant and box_y != boxY_ant:
-               print('if vertical')
-               if( box_y > boxY_ant):
-                  for i in range(boxY_ant, box_y+1):
-                     letra = matriz[i][box_x]
-                     palabra += letra.lower()
-                     print(palabra)
-                  atras = False
-                  else:
-                     for i in reversed(range(box_y, boxY_ant+1)):
-                        letra = matriz[i][box_x]
-                        palabra += letra.lower()
-                        print(palabra)
-                     palabra = palabra[::-1]
-                     atras = True
-                     print(palabra)
-                  if palabra in dic.keys():
-                     tipo = dic[palabra]['tipo']
-                     if tipo == 'sustantivo':
-                        color = col_sus
-                        c_sustantivos-=1
-                     elif tipo == 'adjetivo':
-                        color = col_adj
-                        c_adjetivos-=1
-                     elif tipo == 'verbo':
-                        color = col_ver
-                        c_verbos-=1
-                  else:
-                     color = 'black'
-                  if (atras):
-                     for i in range(box_y, boxY_ant+1):
-                        letter_location = (box_x * BOX_SIZE + 18, i * BOX_SIZE + 17)
-                        g.DrawText('{}'.format(matriz[i][box_x]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
-                 else:
-                     for i in range(boxY_ant, box_y+1):
-                        letter_location = (box_x * BOX_SIZE + 18, i * BOX_SIZE + 17)
-                        g.DrawText('{}'.format(matriz[i][box_x]), letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
-                  boxY_ant = box_y
-                  boxX_ant = box_x
-                  Borrar = False
             else:
-               print('entre tercer if')
-               letter_location_ant= (boxX_ant * BOX_SIZE + 18, boxY_ant * BOX_SIZE + 17)
-               try:
-                  if (Borrar) :
-                     g.DrawText('{}'.format(matriz[boxY_ant][boxX_ant]), letter_location_ant,color="black", font=fuente+' '+str(BOX_SIZE))                    
-                     g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
-               except:
-                  pass
-               boxY_ant = box_y
-               boxX_ant = box_x
-               Borrar=True
+                print('entre tercer if')
+                letter_location_ant= (boxX_ant * BOX_SIZE + 18, boxY_ant * BOX_SIZE + 17)
+                try:
+                    if (Borrar) :
+                        g.DrawText('{}'.format(matriz[boxY_ant][boxX_ant]), letter_location_ant,color="black", font=fuente+' '+str(BOX_SIZE))                    
+                    g.DrawText('{}'.format(matriz[box_y][box_x]), letter_location,color="grey", font=fuente+' '+str(BOX_SIZE))
+                except:
+                    pass
+                boxY_ant = box_y
+                boxX_ant = box_x
+                Borrar=True
         victoria = (c_sustantivos < 1 and c_adjetivos < 1 and c_verbos < 1)
         if(victoria):
             sg.Popup('Ganaste!')
