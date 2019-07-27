@@ -1,7 +1,7 @@
 #!/usr/bin/env python36
 
 import buscador_palabras as bp
-#import sopa_de_letras as sl
+import sopa_de_letras as sl
 import PySimpleGUI as sg
 import string
 import json
@@ -38,10 +38,9 @@ config_layout = [
                 ]
 config_window = sg.Window('CONFIGURACION', background_color=None).Layout(config_layout)
 
-palabras= []                                                #lista de palabras para la sopa de letras
 contador = {'sustantivo':0,'adjetivo':0,'verbo':0 }         #contador de cada tipo
 dic = {}                                                    #diccionario que va a almacenar las palabras por tipos 
-dic_colores = {'ROJO': 'red', 'AMARILLO':'yellow','VERDE':'green','AZUL':'blue','ROSA':'pink','VIOLETA':'purple'}
+
 while True:
     event , values = config_window.Read()
     
@@ -51,12 +50,11 @@ while True:
         if palabra != '' :
             if palabra not in config_window.FindElement('LISTA').GetListValues():
                 if (bp.buscar(palabra,dic,contador)):
-                    palabras.append(palabra)
-                    config_window.FindElement('LISTA').Update(values=palabras)
+                    config_window.FindElement('LISTA').Update(values=list(dic.keys()))
                     contador[dic[palabra]['tipo']] += 1
             else:
                 sg.Popup('La palabra ya fue ingresada, intente con otra')
-    elif event == 'LISTA': #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
+    elif event == 'LISTA':                                                  #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
         sg.Popup('Definicion',dic[values['LISTA'][0]]['descripcion'])
     
     elif event == 'Eliminar':
@@ -69,15 +67,14 @@ while True:
             
             #si tengo al menos una palabra
             if (dic):
-                col_sus = dic_colores[values['COL_SUS']]
-                col_adj = dic_colores[values['COL_ADJ']]
-                col_ver = dic_colores[values['COL_VER']]
                 ayuda = values['AYUDA']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
+                colores = [values['COL_SUS'],values['COL_ADJ'],values['COL_VER']]
+                cantidades = [contador['sustantivo'],contador['adjetivo'], contador['verbo']]
                 config_window.Close()
-                #sl.generar_sopa(dic,masLarga(dic),orientacion,fuente,minusculas)
+                sl.generar_sopa(dic,masLarga(dic),colores,cantidades,orientacion,fuente,minusculas)
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")
