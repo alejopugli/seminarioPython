@@ -1,8 +1,10 @@
 #!/usr/bin/env python36
 
 import buscador_palabras as bp
-import sopa_de_letras as sl
+#import sopa_de_letras as sl
 import PySimpleGUI as sg
+import string
+import json
 
 """
 MIEMBROS DEL GRUPO:
@@ -10,6 +12,10 @@ CRIS, SEBASTIAN AGUSTIN
 PUGLIESE, ALEJO EZEQUIEL
 PISONI, FELIPE
 """
+
+COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
+FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
+
 def masLarga(dic):
     sortedwords = sorted(dic.keys(), key=len, reverse=True)
     return len(sortedwords[0])
@@ -19,7 +25,7 @@ config_layout = [
                    [sg.Text('PALABRAS'),sg.Input(size=(35,1),key='PALABRA'),sg.Button('Agregar',bind_return_key=True)],
                    [sg.Listbox(values=[],size=(55,6),key='LISTA',select_mode="LISTBOX_SELECT_MODE_single", bind_return_key=True)],
                    [sg.Button('Eliminar')],
-                   [sg.Text('\n')],
+                   [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
                    [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
                    [sg.Text('\n')],
                    [sg.Text(' '*27+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
@@ -35,20 +41,21 @@ config_window = sg.Window('CONFIGURACION', background_color=None).Layout(config_
 palabras= []                                                #lista de palabras para la sopa de letras
 contador = {'sustantivo':0,'adjetivo':0,'verbo':0 }         #contador de cada tipo
 dic = {}                                                    #diccionario que va a almacenar las palabras por tipos 
-
+dic_colores = {'ROJO': 'red', 'AMARILLO':'yellow','VERDE':'green','AZUL':'blue','ROSA':'pink','VIOLETA':'purple'}
 while True:
     event , values = config_window.Read()
     
     if event == 'Agregar':
+        ok = False
         palabra = values['PALABRA'].lower()
-        if articulo != None :
+        if palabra != '' :
             if palabra not in config_window.FindElement('LISTA').GetListValues():
                 if (bp.buscar(palabra,dic,contador)):
                     palabras.append(palabra)
                     config_window.FindElement('LISTA').Update(values=palabras)
-                    dic[palabra]={'tipo':tipo,'descripcion':descripcion}
-                    contador[tipo] += 1
-
+                    contador[dic[palabra]['tipo']] += 1
+            else:
+                sg.Popup('La palabra ya fue ingresada, intente con otra')
     elif event == 'LISTA': #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
         sg.Popup('Definicion',dic[values['LISTA'][0]]['descripcion'])
     
@@ -59,18 +66,18 @@ while True:
             config_window.FindElement('LISTA').Update(values=list(dic.keys()))
     
     elif event == 'LISTO':
-            #contadores de tipos:
-            c_sustantivos = int(values['SUSTANTIVOS']) #cantidad sustantivos,adjetivos,verbos
-            c_adjetivos = int(values['ADJETIVOS'])
-            c_verbos = int(values['VERBOS'])
+            
             #si tengo al menos una palabra
-            if (c_sustantivos + c_adjetivos + c_verbos < 0):
+            if (dic):
+                col_sus = dic_colores[values['COL_SUS']]
+                col_adj = dic_colores[values['COL_ADJ']]
+                col_ver = dic_colores[values['COL_VER']]
                 ayuda = values['AYUDA']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
                 config_window.Close()
-                sl.generar_sopa(dic,masLarga(dic),orientacion,fuente,minusculas)
+                #sl.generar_sopa(dic,masLarga(dic),orientacion,fuente,minusculas)
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")

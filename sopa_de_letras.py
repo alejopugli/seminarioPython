@@ -1,4 +1,8 @@
 import PySimpleGUI as sg
+import random
+import string
+
+BOX_SIZE = 25 #constante que representa el tamaño de un "casillero"
 
 def tipoAyuda(ayuda, contador, ayudas, dic):
     if ayuda != 'TOTAL':
