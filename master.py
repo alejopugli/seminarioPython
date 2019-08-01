@@ -22,19 +22,17 @@ def masLarga(dic):
 
 #ventana configuracion:
 config_layout = [
-                   [sg.Text('PALABRAS'),sg.Input(size=(35,1),key='PALABRA'),sg.Button('Agregar',bind_return_key=True)],
-                   [sg.Listbox(values=[],size=(55,6),key='LISTA',select_mode="LISTBOX_SELECT_MODE_single", bind_return_key=True)],
-                   [sg.Button('Eliminar')],
-                   [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
-                   [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
-                   [sg.Text('\n')],
-                   [sg.Text(' '*27+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
-                   [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
-                   [sg.Text(' '*26+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
-                   [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
-                   [sg.Text('\n')],
-                   [sg.Checkbox('SOLO MINUSCULAS',key='MINUSCULAS')],
-                   [sg.Button('LISTO',pad=(179,1))]
+                    [sg.Text('PALABRAS'),sg.Input(size=(35,1),key='PALABRA'),sg.Button('Agregar',bind_return_key=True)],
+                    [sg.Listbox(values=[],size=(55,6),key='LISTA',select_mode="LISTBOX_SELECT_MODE_single", bind_return_key=True)],
+                    [sg.Button('Eliminar')],
+                    [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
+                    [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
+                    [sg.Text(' '*18+'MINUSCULAS'),sg.InputCombo(values=['MINUSCULAS','MAYUSCULAS'],size=(15,1),key='MINUSCULAS')],
+                    [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
+                    [sg.Text(' '*26+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
+                    [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
+                    [sg.Text('\n')],
+                    [sg.Button('LISTO',pad=(179,1))]
                 ]
 config_window = sg.Window('CONFIGURACION', background_color=None).Layout(config_layout)
 
@@ -67,14 +65,13 @@ while True:
             
             #si tengo al menos una palabra
             if (dic):
-                ayuda = values['AYUDA']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
                 colores = [values['COL_SUS'],values['COL_ADJ'],values['COL_VER']]
                 cantidades = [contador['sustantivo'],contador['adjetivo'], contador['verbo']]
                 config_window.Close()
-                sl.generar_sopa(dic,masLarga(dic),colores,cantidades,orientacion,fuente,minusculas)
+                sl.jugar(dic,masLarga(dic),colores,cantidades,orientacion,fuente,minusculas)
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")

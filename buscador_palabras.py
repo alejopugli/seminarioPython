@@ -6,6 +6,24 @@ import PySimpleGUI as sg
 import string
 import time
 
+def clasificar(palabra):
+    
+    clasificaciones = ['NN','VB','VBD','VBG','VBP','VBN','JJ']
+    tipo_pattern=''
+    
+    clasificacion=parse(palabra.lower()).split('/')[1]
+        
+    if clasificacion == clasificaciones[0]: #sustantivo
+        tipo_pattern = 'sustantivo'
+    
+    elif clasificacion in clasificaciones[1:6]: #verbo
+        tipo_pattern = 'verbo'
+    
+    elif clasificacion == clasificaciones[6]: #adjetivo
+        tipo_pattern = 'adjetivo'
+
+    return tipo_pattern
+
 def onPattern(palabra):
     if not palabra in spelling:
         if not palabra in lexicon:
@@ -70,7 +88,12 @@ def buscar(palabra,dic,contador):
                 if tipo != '':
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
                     ok = True
-                dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                    dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                else:
+                    tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra')
+                    descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
+                    ok = True
+                    dic[palabra]={'tipo':tipo,'descripcion':descripcion}
             else:
                 sg.Popup('Ingrese una palabra válida')
             break
