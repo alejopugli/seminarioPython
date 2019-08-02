@@ -53,15 +53,14 @@ def parsear_descripcion(con):
 def esValido(palabra):
 	return palabra.lower() in ['adjetivo','sustantivo','verbo']
 	
-def buscar(palabra,dic,contador):
+def buscar(palabra,dic):
     engine = wik(language='es')
-    ok = False #indica si la palabra se va a agregar a la lista o no
     articulo = None
     for i in range (0,2): #3 reconexciones, una cada 1 segundos
         try:
             articulo = engine.article(singularize(palabra))
         except:
-            time.sleep(1)
+            time.sleep(0.1)
         else:
             if articulo != None and engine.article(palabra).sections[1].title == 'Español':  #si esta en wiktionary
                                                                         #y es una palabra en español (por que puede encontrar palabras en otro idioma)
@@ -86,16 +85,14 @@ def buscar(palabra,dic,contador):
                 tipo = clasificar(palabra)
                 if tipo != '':
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    ok = True
                     dic[palabra]={'tipo':tipo,'descripcion':descripcion}
                 else:
                     tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra')
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    ok = True
                     dic[palabra]={'tipo':tipo,'descripcion':descripcion}
             else:
                 sg.Popup('Ingrese una palabra válida')
             break
-    return ok
+    return dic
 
         
