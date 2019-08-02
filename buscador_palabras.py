@@ -40,7 +40,6 @@ def parsear_tipo(con):
     return tipo
 
 def parsear_descripcion(con):
-    tipo=''
     i=0
     while con[i] != '1':
         i += 1

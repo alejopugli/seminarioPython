@@ -47,7 +47,7 @@ while True:
         palabra = values['PALABRA'].lower()
         if palabra != '' :
             if palabra not in config_window.FindElement('LISTA').GetListValues():
-                if (bp.buscar(palabra,dic,contador)):
+                if (bp.buscar(palabra,dic,contador)):#solo anda para 1 palabra
                     config_window.FindElement('LISTA').Update(values=list(dic.keys()))
                     contador[dic[palabra]['tipo']] += 1
             else:
