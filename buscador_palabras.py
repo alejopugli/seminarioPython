@@ -64,13 +64,11 @@ def buscar(palabra,dic):
         else:
             if articulo != None and engine.article(palabra).sections[1].title == 'Español':  #si esta en wiktionary
                                                                         #y es una palabra en español (por que puede encontrar palabras en otro idioma)
-                print('Esta en wiktionary')
                 try:
                     seccion = articulo.sections[3].content
                     tipo = parsear_tipo(seccion)
                     descripcion = parsear_descripcion(seccion)
                     dic[palabra]={'tipo':tipo,'descripcion':descripcion}
-                    ok= True
                 except: #si esta en wiktionary pero no pudo parsear la definicion y el tipo...
                     if onPattern(palabra): 
                         tipo = clasificar(singularize(palabra)) #saca el tipo de pattern
@@ -81,7 +79,6 @@ def buscar(palabra,dic):
                             tipo = tipo.lower()
                             dic[palabra]={'tipo':tipo,'descripcion':descripcion}
             elif onPattern(palabra): #si fue None se pureba si esta en pattern
-                print('Esta en pattern')
                 tipo = clasificar(palabra)
                 if tipo != '':
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
@@ -89,9 +86,13 @@ def buscar(palabra,dic):
                 else:
                     tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra')
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                    if tipo and descripcion != '':
+                        dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                    else: 
+                        return False
             else:
                 sg.Popup('Ingrese una palabra válida')
+                return False
             break
     return dic
 

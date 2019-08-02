@@ -47,9 +47,9 @@ while True:
         palabra = values['PALABRA'].lower()
         if palabra != '' :
             if palabra not in config_window.FindElement('LISTA').GetListValues():
-                bp.buscar(palabra,dic)
-                config_window.FindElement('LISTA').Update(values=list(dic.keys()))
-                contador[dic[palabra]['tipo']] += 1
+                if bp.buscar(palabra,dic):
+                    config_window.FindElement('LISTA').Update(values=list(dic.keys()))
+                    contador[dic[palabra]['tipo']] += 1
             else:
                 sg.Popup('La palabra ya fue ingresada, intente con otra')
     elif event == 'LISTA':                                                  #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
