@@ -16,7 +16,7 @@ def rotar(matriz):
     '''Esta función permite rotar la matriz de manera que las palabras se muestren verticalmente'''
     return list(zip(*matriz[::-1]))
 
-def generar_sopa(dic,longitud, colores,cantidades, orientacion='HORIZONTAL',fuente='Comic',minusculas='MAYUSCULAS'):
+def generar_sopa(dic,longitud,orientacion='HORIZONTAL',minusculas='MAYUSCULAS'):
     '''funcion responsable de generar la matriz de letras aleatorias con las palabras definidas'''
     lista = list(dic.keys())
     dispersion = [True]
@@ -79,24 +79,57 @@ def color_a_pintar(tipo,colores):
         return dic_colores[colores[1]]
     else:
         return dic_colores[colores[2]]
-        
+
+def pintar(matriz,x_y,anterior,g,fuente,color='black'):
+    '''esta funcion es la encargada de pintar la palabra seleccionada y devuelve la misma'''
+    palabra = '' 
+    if anterior[0] == x_y[0]:
+        if anterior[1]< x_y[1]:
+            rango = range(anterior[1], x_y[1]+1)
+        else:
+            rango = range( x_y[1],anterior[1]+1)
+    else:
+        if anterior[0]<x_y[0]:
+            rango = range(anterior[0], x_y[0]+1)
+        else:
+            rango = range(x_y[0],anterior[0]+1)
+    for i in rango:
+        if anterior[0] == x_y[0]:
+            letra = matriz[i][x_y[0]]
+            palabra += letra.lower()
+            letter_location = (x_y[0] * BOX_SIZE + 18, i * BOX_SIZE + 17)
+            try:
+                g.DrawText('{}'.format(matriz[i][x_y[0]]), letter_location, color=color, font=fuente+' '+str(BOX_SIZE))
+            except:
+                pass
+        else:
+            letra = matriz[x_y[1]][i]
+            palabra += letra.lower()
+            letter_location = (i * BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
+            try:
+                g.DrawText('{}'.format(matriz[x_y[1]][i]), letter_location, color=color, font=fuente+' '+str(BOX_SIZE))
+            except:
+                pass
+    return palabra
+    
+
 def jugar(dic , longitud ,colores, cantidades, orientacion, fuente, minusculas):
     
-    matriz = generar_sopa(dic, longitud, colores, cantidades, orientacion, fuente, minusculas)
+    matriz = generar_sopa(dic, longitud, orientacion, minusculas)
     
     sopa_layout = [
             [sg.Text('',visible=False,size=(30,1),font='Courier 20',key='CANTIDAD')],
             [sg.Button('AYUDA',key='HELP',visible=True)],
             [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO')],
-            [sg.Graph((600,600), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
+            [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
             ]
             
     sopa_window = sg.Window('SOPA DE LETRAS', resizable=True).Layout(sopa_layout).Finalize()
     g = sopa_window.FindElement('_GRAPH_')
     
     dibujar_sopa(matriz, g, longitud, fuente)
-    palabra=''
     anterior=()
+    palabra=''
     while True:
         event, values = sopa_window.Read()
         tipo = values['TIPO'] #variable utilizada para saber el tipo de palabra que va a buscar
@@ -108,71 +141,53 @@ def jugar(dic , longitud ,colores, cantidades, orientacion, fuente, minusculas):
             tipo = values
         elif event == '_GRAPH_':
             mouse = values['_GRAPH_']
-            print(mouse, ' mouse')
             if mouse == (None,None):
                 continue
             else:
-                if (orientacion == 'VERTICAL'):
-                    x_y = (mouse[1]//BOX_SIZE, mouse[0]//BOX_SIZE)
-                else:
-                    x_y = (mouse[0]//BOX_SIZE, mouse[1]//BOX_SIZE)
-            print(x_y, ' x_y')
-            print(anterior, ' anterior')
-            
-            if anterior == ():
-                letter_location = (x_y[0]* BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
-                print(letter_location)
-                print("anterior = null")
-                try:
-                    g.DrawText('{}'.format(matriz[x_y[1]][x_y[0]]),letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
-                except:
-                    pass
+                x_y = (mouse[0]//BOX_SIZE, mouse[1]//BOX_SIZE)
+            #pinto la primera letra
+            letter_location = (x_y[0]* BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
+            try:
+                g.DrawText('{}'.format(matriz[x_y[1]][x_y[0]]),letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
+            except:
+                pass
+            if palabra == '':
+                #cuando no tengo seleccion previa, agrego la primera letra
+                letra = matriz[x_y[1]][x_y[0]]
+                palabra += letra.lower()
             else:
-                print(anterior,' anterior')
-                atras = False
-                if x_y[1] >= anterior[1] :
-                    print('x_y es mayor')
-                    for i in range(anterior[0], x_y[0]+1):
-                        letra = matriz[x_y[1]][i]
-                        palabra += letra.lower()
-                    print(palabra)
-                    atras = False
-                elif x_y[1] < anterior[1] :
-                    print('x_y es menor')
-                    for i in reversed(range(anterior[1], x_y[1]+1)):
-                        letra = matriz[x_y[1]][i]
-                        palabra += letra.lower()
-                    palabra = palabra[::-1]
-                    atras = True
-                    print(palabra)
-                if (atras):
-                    for i in range(x_y[1], anterior[1]+1):
-                        letter_location = (i * BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
-                        try:
-                            g.DrawText('{}'.format(matriz[x_y[1]][i]), letter_location, color=color, font=fuente+' '+str(BOX_SIZE))
-                        except:
-                            pass
+                if x_y[0] != anterior[0] and x_y[1] != anterior[1]:
+                    #solo entra cuando la 2da seleccion es en diagonal
+                    letter_location = (anterior[0]* BOX_SIZE + 18, anterior[1] * BOX_SIZE + 17)
+                    try:
+                        #pinto la anterior en negro
+                        g.DrawText('{}'.format(matriz[anterior[1]][anterior[0]]),letter_location,color='black', font=fuente+' '+str(BOX_SIZE))
+                    except:
+                        pass                                      
+                    letter_location = (x_y[0]* BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
+                    try:
+                        #pinto la nueva letra del color (segun el tipo)
+                        g.DrawText('{}'.format(matriz[x_y[1]][x_y[0]]),letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
+                    except:
+                        pass
                 else:
-                    for i in range(anterior[0], x_y[0]+1):
-                        letter_location = (i * BOX_SIZE + 18, x_y[1] * BOX_SIZE + 17)
-                        try:
-                            g.DrawText('{}'.format(matriz[x_y[1]][i]), letter_location, color=color, font=fuente+' '+str(BOX_SIZE))
-                        except:
-                            pass
-                if palabra in list(dic.keys()):
-                    print(dic[[palabra][0]]['tipo'])
-                    print(tipo)
-                    if dic[[palabra][0]]['tipo']!=tipo:
-                        sg.Popup('¡Muy Bien! Encontraste una palabra, \n pero no es un: '+tipo)
-                    else:
-                        del dic[[palabra][0]]
-                        sg.Popup('¡Felicitaciones! Haz encontrado una palabra, \n solo faltan: '+ str(len(dic.keys())))
-                else:
-                    sg.Popup('Ups, esa no es una palabra válida')
+                    palabra = pintar(matriz,x_y,anterior,g,fuente,color)
+                    if palabra in list(dic.keys()):
+                        if dic[[palabra][0]]['tipo']!=tipo:
+                            sg.Popup('¡Muy Bien! Encontraste una palabra, \n pero no es un: '+tipo)
+                            pintar(matriz,x_y,anterior,g,fuente)
+                        else:
+                            del dic[[palabra][0]]
+                            if len(dic.keys()) > 0 :
+                                sg.Popup('¡Felicitaciones! Haz encontrado una palabra,\nsolo faltan '+ str(len(dic.keys())))
+                            else:
+                                sg.Popup('¡Felicitaciones! Haz encontrado la ultima palabra!\n¡Haz Ganado!')
+                                break
+                    else :
+                        pintar(matriz,x_y,anterior,g,fuente) #vuelvo a pintar pero en negro
+                        sg.Popup('Ups, esa no es una palabra válida')
+                    palabra = ''
         else:
             break
         anterior = x_y
-        if(len(dic.keys())==0):
-            sg.Popup('Ganaste!')
-            break
     sopa_window.Close()
