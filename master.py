@@ -17,6 +17,7 @@ COLORES = ['ROJO','VERDE','AZUL','AMARILLO','ROSA','VIOLETA']
 FUENTES = [ 'Arial' ,'Courier', 'Comic', 'Fixedsys','Times','Verdana','Helvetica' ]
 
 def masLarga(dic):
+    '''esta funcion devuelve la palabra mas larga entre las ingresadas'''
     sortedwords = sorted(dic.keys(), key=len, reverse=True)
     return len(sortedwords[0])
 
@@ -29,8 +30,8 @@ config_layout = [
                     [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
                     [sg.Text(' '*18+'MINUSCULAS'),sg.InputCombo(values=['MINUSCULAS','MAYUSCULAS'],size=(15,1),key='MINUSCULAS')],
                     [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
-                    [sg.Text(' '*26+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
-                    [sg.Text(' '*26+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
+                    [sg.Text(' '*27+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
+                    [sg.Text(' '*27+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
                     [sg.Text('\n')],
                     [sg.Button('LISTO',pad=(179,1))]
                 ]
@@ -38,10 +39,8 @@ config_window = sg.Window('CONFIGURACION', background_color=None).Layout(config_
 
 contador = {'sustantivo':0,'adjetivo':0,'verbo':0 }         #contador de cada tipo
 dic = {}                                                    #diccionario que va a almacenar las palabras por tipos 
-
-while True:
-    event , values = config_window.Read()
-    
+event , values = config_window.Read()
+while event != None:
     if event == 'Agregar':
         ok = False
         palabra = values['PALABRA'].lower()
@@ -62,7 +61,6 @@ while True:
             config_window.FindElement('LISTA').Update(values=list(dic.keys()))
     
     elif event == 'LISTO':
-            
             #si tengo al menos una palabra
             if (dic):
                 minusculas = values['MINUSCULAS']
@@ -75,5 +73,5 @@ while True:
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")
-    elif event is None:
-        break
+    event , values = config_window.Read()
+config_window.Close()
