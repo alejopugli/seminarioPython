@@ -128,12 +128,11 @@ def jugar(dic , longitud ,colores, cantidades, orientacion, fuente, minusculas):
     tipo = values['TIPO'] #variable utilizada para saber el tipo de palabra que va a buscar
     color = color_a_pintar(tipo,colores)
     while event != None:
+        tipo = values['TIPO']
+        color = color_a_pintar(tipo,colores)
         if event == 'HELP':
             #Agregar distintas ayudas
             sg.Popup('Buscá la palabra: ', random.choice(list(dic.keys())))
-        elif event == 'TIPO':
-            tipo = values
-            color = color_a_pintar(tipo,colores)
         elif event == '_GRAPH_':
             mouse = values['_GRAPH_']
             if mouse == (None,None):
