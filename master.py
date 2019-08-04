@@ -21,6 +21,15 @@ def masLarga(dic):
     sortedwords = sorted(dic.keys(), key=len, reverse=True)
     return len(sortedwords[0])
 
+def cargarJSON():
+    arch = open('datos-oficinas.json','r')
+    if arch is not None:
+        datosJson = json.load(arch)
+        return datosJson
+    else:
+        return None
+
+oficinas = cargarJSON()
 #ventana configuracion:
 config_layout = [
                     [sg.Text('PALABRAS'),sg.Input(size=(35,1),key='PALABRA'),sg.Button('Agregar',bind_return_key=True)],
@@ -31,7 +40,7 @@ config_layout = [
                     [sg.Text(' '*18+'MINUSCULAS'),sg.InputCombo(values=['MINUSCULAS','MAYUSCULAS'],size=(15,1),key='MINUSCULAS')],
                     [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
                     [sg.Text(' '*27+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
-                    [sg.Text(' '*27+'OFICINA'),sg.InputCombo(values=[None],size=(15,1))], #values=list(oficinas.keys())                
+                    [sg.Text(' '*27+'OFICINA'),sg.InputCombo(values=list(oficinas.keys()),size=(15,1),key='OFICINAS')],                
                     [sg.Text('\n')],
                     [sg.Button('LISTO',pad=(179,1))]
                 ]
@@ -63,13 +72,14 @@ while event != None:
     elif event == 'LISTO':
             #si tengo al menos una palabra
             if (dic):
+                ofiAProcesar = values['OFICINAS']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
                 orientacion = values['ORIENTACION']
                 colores = [values['COL_SUS'],values['COL_ADJ'],values['COL_VER']]
                 cantidades = [contador['sustantivo'],contador['adjetivo'], contador['verbo']]
                 config_window.Close()
-                sl.jugar(dic,masLarga(dic),colores,cantidades,orientacion,fuente,minusculas)
+                sl.jugar(dic,masLarga(dic),colores,cantidades,oficinas,ofiAProcesar,orientacion,fuente,minusculas)
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")

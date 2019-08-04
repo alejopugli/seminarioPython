@@ -104,29 +104,45 @@ def pintar(matriz,x_y,anterior,g,fuente,color='black'):
             except:
                 pass
     return palabra
-    
 
-def jugar(dic , longitud ,colores, cantidades, orientacion, fuente, minusculas):
+def look(temp):
+    if temp>=30:
+        return 'red'
+    elif temp<=13:
+        return 'blue'
+    else:
+        return 'yellow'
+
+def mapear(ofi): #arreglo de diccionar
+    temps = [ ]
+    for i in ofi:
+        temps.append(int(i['temp']))
+    return temps
+
+def jugar(dic , longitud ,colores, cantidades,oficinas, ofiAProcesar, orientacion, fuente, minusculas):
     '''funcion principal encargada de operar en la sopa de letras'''
     matriz = generar_sopa(dic, longitud, orientacion, minusculas)
+    lenght = (len(matriz[0])*BOX_SIZE)*2+ 15
     sopa_layout = [
             [sg.Text('',visible=False,size=(30,1),font='Courier 20',key='CANTIDAD')],
-            [sg.Button('AYUDA',key='HELP',visible=True)],
-            [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO')],
-            [sg.Button('SALIR',key='EXIT',visible=False)],
-            [sg.Graph((800,800), (0,450), (450,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
+            [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO'),
+            sg.Button('AYUDA',key='HELP',visible=True),
+            sg.Button('SALIR',key='EXIT',visible=False)],
+            [sg.Graph((lenght,lenght), (0,lenght/2), (lenght/2,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
             ]
+    
+    listaTemperaturas = mapear(oficinas[ofiAProcesar])
+    temPromedio = sum(listaTemperaturas)/len(listaTemperaturas)
 
+    bg_color = look(temPromedio)
             
-    sopa_window = sg.Window('SOPA DE LETRAS', resizable=True).Layout(sopa_layout).Finalize()
+    sopa_window = sg.Window('SOPA DE LETRAS', resizable=True, background_color=bg_color).Layout(sopa_layout).Finalize()
     g = sopa_window.FindElement('_GRAPH_')
     
     dibujar_sopa(matriz, g, longitud, fuente)
     anterior=()
     palabra=''
     event, values = sopa_window.Read()
-    tipo = values['TIPO'] #variable utilizada para saber el tipo de palabra que va a buscar
-    color = color_a_pintar(tipo,colores)
     while event != None:
         tipo = values['TIPO']
         color = color_a_pintar(tipo,colores)
@@ -178,7 +194,7 @@ def jugar(dic , longitud ,colores, cantidades, orientacion, fuente, minusculas):
                             else:
                                 sg.Popup('¡Felicitaciones! Haz encontrado la ultima palabra!\n¡Haz Ganado!')
                                 sopa_window.FindElement('EXIT').Update(visible=True)
-                                while event != 'EXIT':
+                                while event != 'EXIT' and event !=None:
                                     event, values = sopa_window.Read()
                                 break
                     else :

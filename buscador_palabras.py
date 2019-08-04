@@ -2,9 +2,19 @@
 
 from pattern.web import Wiktionary as wik
 from pattern.es import parse, spelling, lexicon, singularize
+from datetime import datetime
 import PySimpleGUI as sg
 import string
 import time
+
+def reportar(s):
+    '''funcion encargada de abrir el archivo reporte.txt y reportar las palabras que no fueron encontradas'''
+    try:
+        reporte=open('reporte.txt','a+')
+        reporte.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+' -- '+s+'\n')
+        reporte.close()
+    except IOError:
+        sg.Popup('No se pudo escribir en el reporte')
 
 def clasificar(palabra):
     
@@ -88,9 +98,11 @@ def buscar(palabra,dic):
                     descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
                     if tipo and descripcion != '':
                         dic[palabra]={'tipo':tipo,'descripcion':descripcion}
-                    else: 
+                    else:
+                        reportar(palabra + ' la palabra no tiene un tipo o descripcion validos') 
                         return False
             else:
+                reportar(palabra + ' no esta en wiktionary ni en pattern')
                 sg.Popup('Ingrese una palabra válida')
                 return False
             break
