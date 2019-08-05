@@ -119,17 +119,17 @@ def mapear(ofi): #arreglo de diccionar
         temps.append(int(i['temp']))
     return temps
 
-def jugar(dic , longitud ,colores, cantidades,oficinas, ofiAProcesar, orientacion, fuente, minusculas):
+def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orientacion, fuente, minusculas):
     '''funcion principal encargada de operar en la sopa de letras'''
     matriz = generar_sopa(dic, longitud, orientacion, minusculas)
     lenght = (len(matriz[0])*BOX_SIZE)*2+ 15
     sopa_layout = [
-            [sg.Text('',visible=False,size=(30,1),font='Courier 20',key='CANTIDAD')],
+            [sg.Text('SUSTANTIVOS: '+str(contador['sustantivo'])+'  '+'ADJETIVOS: '+str(contador['adjetivo'])+'  '+'VERBOS:'+str(contador['verbo']),visible=True,key='CANTIDAD')],
             [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO'),
             sg.Button('AYUDA',key='HELP',visible=True),
             sg.Button('SALIR',key='EXIT',visible=False)],
             [sg.Graph((lenght,lenght), (0,lenght/2), (lenght/2,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
-            ]
+        ]
     
     listaTemperaturas = mapear(oficinas[ofiAProcesar])
     temPromedio = sum(listaTemperaturas)/len(listaTemperaturas)
@@ -138,7 +138,13 @@ def jugar(dic , longitud ,colores, cantidades,oficinas, ofiAProcesar, orientacio
             
     sopa_window = sg.Window('SOPA DE LETRAS', resizable=True, background_color=bg_color).Layout(sopa_layout).Finalize()
     g = sopa_window.FindElement('_GRAPH_')
-    
+    if ayuda == 'DESACTIVADA':
+        sopa_window.FindElement('HELP').Update(visible=False)
+    else:
+        if ayuda == 'PARCIAL':
+            hints = [ ]
+            for i in dic.keys():
+                hints.append(dic[i]['descripcion'])
     dibujar_sopa(matriz, g, longitud, fuente)
     anterior=()
     palabra=''
@@ -147,8 +153,11 @@ def jugar(dic , longitud ,colores, cantidades,oficinas, ofiAProcesar, orientacio
         tipo = values['TIPO']
         color = color_a_pintar(tipo,colores)
         if event == 'HELP':
-            #Agregar distintas ayudas
-            sg.Popup('Buscá la palabra: ', random.choice(list(dic.keys())))
+            if ayuda == 'TOTAL':
+                sg.Popup('Buscá la palabra: ', random.choice(list(dic.keys())))
+            elif ayuda == 'PARCIAL':
+                sg.Popup('Pista: ', random.choice(hints))
+
         elif event == '_GRAPH_':
             mouse = values['_GRAPH_']
             if mouse == (None,None):
@@ -189,17 +198,19 @@ def jugar(dic , longitud ,colores, cantidades,oficinas, ofiAProcesar, orientacio
                             pintar(matriz,x_y,anterior,g,fuente)
                         else:
                             del dic[[palabra][0]]
+                            contador[tipo] = contador[tipo]-1
+                            sopa_window.FindElement('CANTIDAD').Update('SUSTANTIVOS: '+str(contador['sustantivo'])+'  '+'ADJETIVOS: '+str(contador['adjetivo'])+'  '+'VERBOS:'+str(contador['verbo']))
                             if len(dic.keys()) > 0 :
-                                sg.Popup('¡Felicitaciones! Haz encontrado una palabra,\nsolo faltan '+ str(len(dic.keys())))
+                                sg.Popup('¡Felicitaciones! \nHaz encontrado la palabra: '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' palabras.')
                             else:
-                                sg.Popup('¡Felicitaciones! Haz encontrado la ultima palabra!\n¡Haz Ganado!')
+                                sg.Popup('¡GANASTE! \n¡Haz encontrado la ultima palabra!')
                                 sopa_window.FindElement('EXIT').Update(visible=True)
                                 while event != 'EXIT' and event !=None:
                                     event, values = sopa_window.Read()
                                 break
                     else :
                         pintar(matriz,x_y,anterior,g,fuente) #vuelvo a pintar pero en negro
-                        sg.Popup('Ups, esa no es una palabra válida')
+                        sg.Popup('Ups, "'+palabra+'" no es una palabra válida')
                     palabra = ''
             anterior = x_y
         event, values = sopa_window.Read()

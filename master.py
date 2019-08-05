@@ -38,6 +38,7 @@ config_layout = [
                     [sg.Text(' '*19+'SUSTANTIVOS'+' '*2),sg.Text('ADJETIVOS'+' '*6),sg.Text('VERBOS')],
                     [sg.Text(' '*5+'COLOR'),sg.InputCombo(values=COLORES,default_value=COLORES[0],size=(10,1),key='COL_SUS'),sg.InputCombo(values=COLORES,default_value=COLORES[1],size=(10,1),key='COL_ADJ'),sg.InputCombo(values=COLORES,default_value=COLORES[2],size=(10,1),key='COL_VER')],                 
                     [sg.Text(' '*18+'MINUSCULAS'),sg.InputCombo(values=['MINUSCULAS','MAYUSCULAS'],size=(15,1),key='MINUSCULAS')],
+                    [sg.Text(' '*29+'AYUDA'),sg.InputCombo(values=['TOTAL','PARCIAL','DESACTIVADA'],default_value='DESACTIVADA',size=(15,1),key='AYUDA')],
                     [sg.Text(' '*17+'ORIENTACION'),sg.InputCombo(values=['HORIZONTAL','VERTICAL'],size=(15,1),key='ORIENTACION')],
                     [sg.Text(' '*27+'FUENTE'),sg.InputCombo(values=FUENTES,size=(15,1),key='FUENTE')],
                     [sg.Text(' '*27+'OFICINA'),sg.InputCombo(values=list(oficinas.keys()),size=(15,1),key='OFICINAS')],                
@@ -75,11 +76,11 @@ while event != None:
                 ofiAProcesar = values['OFICINAS']
                 minusculas = values['MINUSCULAS']
                 fuente = values['FUENTE']
+                ayuda = values['AYUDA']
                 orientacion = values['ORIENTACION']
                 colores = [values['COL_SUS'],values['COL_ADJ'],values['COL_VER']]
-                cantidades = [contador['sustantivo'],contador['adjetivo'], contador['verbo']]
                 config_window.Close()
-                sl.jugar(dic,masLarga(dic),colores,cantidades,oficinas,ofiAProcesar,orientacion,fuente,minusculas)
+                sl.jugar(dic,masLarga(dic),ayuda,colores,contador,oficinas,ofiAProcesar,orientacion,fuente,minusculas)
                 break
             else:
                 sg.Popup("Ingrese al menos una palabra valida")
