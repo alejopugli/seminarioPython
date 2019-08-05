@@ -14,7 +14,7 @@ def reportar(s):
         reporte.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+' -- '+s+'\n')
         reporte.close()
     except IOError:
-        sg.Popup('No se pudo escribir en el reporte')
+        sg.Popup('Error al escribir en el reporte')
 
 def clasificar(palabra):
     
@@ -32,7 +32,8 @@ def clasificar(palabra):
     elif clasificacion == clasificaciones[6]: #adjetivo
         tipo_pattern = 'adjetivo'
 
-    return tipo_pattern
+    else:
+        return ''
 
 def onPattern(palabra):
     if not palabra in spelling:
@@ -60,9 +61,35 @@ def parsear_descripcion(con):
     descripcion = con[i:k-1]
     return descripcion
 
-def esValido(palabra):
-	return palabra.lower() in ['adjetivo','sustantivo','verbo']
-	
+def esValido(tipo):
+	return tipo in ['adjetivo','sustantivo','verbo']
+
+def agregarTipo():
+    tipo = sg.PopupGetText('Ingrese el tipo de la palabra','Tipo')
+    while True :
+        if tipo == None:
+            return False
+        elif tipo=='':                                                                     
+            tipo = sg.PopupGetText('Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)','Tipo')
+        else:
+            tipo = tipo.lower()
+            if esValido(tipo):
+                break
+            else:
+                tipo = sg.PopupGetText('Tipo','Ingrese un tipo entre (sustantivo,adjetivo,verbo)')
+    return tipo
+
+def agregarDescripcion():
+    descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion') #si no encontro la palabra en pattern se ingresa el tipo manualmente
+    while True :
+        if descripcion == None:
+            return False
+        elif descripcion=='':                                                                     
+            descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion')
+        else:
+            break
+    return descripcion
+    	
 def buscar(palabra,dic):
     engine = wik(language='es')
     articulo = None
@@ -79,33 +106,45 @@ def buscar(palabra,dic):
                     tipo = parsear_tipo(seccion)
                     descripcion = parsear_descripcion(seccion)
                     dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                    reportar(palabra + ' está en wiktionary')
+                    return dic
                 except: #si esta en wiktionary pero no pudo parsear la definicion y el tipo...
                     if onPattern(palabra): 
                         tipo = clasificar(singularize(palabra)) #saca el tipo de pattern
+                        if not esValido(tipo):
+                            tipo = agregarTipo()
+                            if not tipo:
+                                return False
+                        descripcion = agregarDescripcion()
+                        if not descripcion:
+                            return False
+                        dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                        reportar(palabra + ' está en pattern')
+                        return dic
                     else:
-                        tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower() #si no encontro la palabra en pattern se ingresa el tipo manualmente
-                        while not esValido(tipo):                                                                     
-                            tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)').lower()
-                            tipo = tipo.lower()
-                            dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                        tipo = agregarTipo()
+                        if not tipo:
+                            return False
+                        descripcion = agregarDescripcion()
+                        if not descripcion:
+                            return False
+                        dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                        reportar(palabra + ' no está ni en wiktionary o pattern')
+                        return dic
             elif onPattern(palabra): #si fue None se pureba si esta en pattern
                 tipo = clasificar(palabra)
-                if tipo != '':
-                    descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    dic[palabra]={'tipo':tipo,'descripcion':descripcion}
-                else:
-                    tipo = sg.PopupGetText('Tipo','Ingrese el tipo de la palabra')
-                    descripcion = sg.PopupGetText('Definicion','Ingrese una definicion de la palabra')
-                    if tipo and descripcion != '':
-                        dic[palabra]={'tipo':tipo,'descripcion':descripcion}
-                    else:
-                        reportar(palabra + ' la palabra no tiene un tipo o descripcion validos') 
+                if not esValido(tipo):
+                    tipo = agregarTipo()
+                    if not tipo:
                         return False
+                descripcion = agregarDescripcion()
+                if not descripcion:
+                    return False
+                reportar(palabra + ' con tipo y descripcion generada por el usuario')
+                dic[palabra]={'tipo':tipo,'descripcion':descripcion}
+                return dic
             else:
                 reportar(palabra + ' no esta en wiktionary ni en pattern')
                 sg.Popup('Ingrese una palabra válida')
                 return False
-            break
-    return dic
-
         
