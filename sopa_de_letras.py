@@ -16,31 +16,34 @@ def rotar(matriz):
     '''Esta función permite rotar la matriz de manera que las palabras se muestren verticalmente'''
     return list(zip(*matriz[::-1]))
 
+def definirLong(lon):
+    if lon >= 5 :
+        return lon+2
+    else:
+        return lon*2
+
 def generar_sopa(dic,longitud,orientacion='HORIZONTAL',minusculas='MAYUSCULAS'):
     '''funcion responsable de generar la matriz de letras aleatorias con las palabras definidas'''
-    lista = list(dic.keys())
+    dictKeys = list(dic.keys())
     dispersion = [True]
     m = lambda l: 1 if l >= 8 else -2 
     for j in range(longitud - m(longitud)):
         dispersion.append(False)
-    if longitud >= 5 :
-        filas = longitud+3
-    else:
-        filas = longitud*2
+    filas = definirLong(longitud)
     if (minusculas == 'MINUSCULAS'):
         mayus_minus=string.ascii_lowercase
     else:
         mayus_minus=string.ascii_uppercase
-        lista = [x.upper() for x in lista]
+        dictKeys = [x.upper() for x in dictKeys]
     matriz = [ ]
     for i in range(filas):
         row = [ ]
         k=0
         while k < filas:
-            if len(lista) > 0 :
-                palabra = random.choice(lista)
-            if decidir(k,filas,lista,palabra,dispersion):
-                lista.remove(palabra)
+            if len(dictKeys) > 0 :
+                palabra = random.choice(dictKeys)
+            if decidir(k,filas,dictKeys,palabra,dispersion):
+                dictKeys.remove(palabra)
                 n = 0
                 while k < filas and n < len(palabra):
                     row.append(palabra[n])
@@ -203,16 +206,16 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
                     palabra = pintar(matriz,x_y,anterior,g,fuente,color)
                     if palabra in list(dic.keys()):
                         if dic[[palabra][0]]['tipo']!=tipo:
-                            sg.Popup('¡Muy Bien!', 'Encontraste la palabra '+palabra+',\npero no es un: '+tipo ,keep_on_top= True)
+                            sg.Popup('¡Muy Bien!', 'Encontraste la palabra '+palabra+',\npero no es un '+tipo ,keep_on_top= True)
                             pintar(matriz,x_y,anterior,g,fuente)
                         else:
                             del dic[[palabra][0]]
                             contador[tipo] = contador[tipo]-1
                             sopa_window.FindElement('CANTIDAD').Update('SUSTANTIVOS: '+str(contador['sustantivo'])+'  '+'ADJETIVOS: '+str(contador['adjetivo'])+'  '+'VERBOS:'+str(contador['verbo']))
                             if len(dic.keys()) > 0 :
-                                sg.Popup('¡Felicitaciones!','Haz encontrado la palabra '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' más.',keep_on_top= True)
+                                sg.Popup('¡Felicitaciones!','Has encontrado la palabra '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' más.',keep_on_top= True)
                             else:
-                                sg.Popup('¡GANASTE!','¡Haz encontrado la ultima palabra!',keep_on_top= True)
+                                sg.Popup('¡GANASTE!','¡Has encontrado la ultima palabra!',keep_on_top= True)
                                 sopa_window.FindElement('EXIT').Update(visible=True)
                                 while event != 'EXIT' and event !=None:
                                     event, values = sopa_window.Read()
