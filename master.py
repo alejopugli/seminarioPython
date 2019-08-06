@@ -59,8 +59,11 @@ while event != None:
                 if bp.buscar(palabra,dic):
                     config_window.FindElement('LISTA').Update(values=list(dic.keys()))
                     contador[dic[palabra]['tipo']] += 1
+                    sg.PopupTimed('La palabra '+palabra+' fue ingresada con exito')
+                else:
+                    sg.PopupError('Ingrese una palabra válida','palabra invalida',keep_on_top=True)
             else:
-                sg.Popup('La palabra ya fue ingresada, intente con otra')
+                sg.Popup('Palabra repetida','La palabra ya fue ingresada... Intente con otra',keep_on_top= True)
     elif event == 'LISTA':                                                  #si se hace doble clcik en un elemento de la lista se muestra la definicion de la palabra
         sg.Popup('Definicion',dic[values['LISTA'][0]]['descripcion'])
     
@@ -83,6 +86,6 @@ while event != None:
                 sl.jugar(dic,masLarga(dic),ayuda,colores,contador,oficinas,ofiAProcesar,orientacion,fuente,minusculas)
                 break
             else:
-                sg.Popup("Ingrese al menos una palabra valida")
+                sg.PopupError('Ingrese al menos una palabra valida',no_titlebar=True,keep_on_top= True)
     event , values = config_window.Read()
 config_window.Close()

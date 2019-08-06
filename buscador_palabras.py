@@ -65,27 +65,27 @@ def esValido(tipo):
 	return tipo in ['adjetivo','sustantivo','verbo']
 
 def agregarTipo():
-    tipo = sg.PopupGetText('Ingrese el tipo de la palabra','Tipo')
+    tipo = sg.PopupGetText('Ingrese el tipo de la palabra','Tipo',keep_on_top=True)
     while True :
         if tipo == None:
             return False
         elif tipo=='':                                                                     
-            tipo = sg.PopupGetText('Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)','Tipo')
+            tipo = sg.PopupGetText('Ingrese el tipo de la palabra (sustantivo,adjetivo,verbo)','Tipo',keep_on_top= True)
         else:
             tipo = tipo.lower()
             if esValido(tipo):
                 break
             else:
-                tipo = sg.PopupGetText('Tipo','Ingrese un tipo entre (sustantivo,adjetivo,verbo)')
+                tipo = sg.PopupGetText('Ingrese un tipo entre (sustantivo,adjetivo,verbo)','Tipo',keep_on_top= True)
     return tipo
 
 def agregarDescripcion():
-    descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion') #si no encontro la palabra en pattern se ingresa el tipo manualmente
+    descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion',keep_on_top= True) #si no encontro la palabra en pattern se ingresa el tipo manualmente
     while True :
         if descripcion == None:
             return False
         elif descripcion=='':                                                                     
-            descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion')
+            descripcion = sg.PopupGetText('Ingrese la definicion de la palabra','Descripcion',keep_on_top= True)
         else:
             break
     return descripcion
@@ -94,6 +94,7 @@ def buscar(palabra,dic):
     engine = wik(language='es')
     articulo = None
     for i in range (0,2): #3 reconexciones, una cada 1 segundos
+        sg.PopupAnimated('loading.gif',alpha_channel=0.5)
         try:
             articulo = engine.article(singularize(palabra))
         except:
@@ -107,8 +108,10 @@ def buscar(palabra,dic):
                     descripcion = parsear_descripcion(seccion)
                     dic[palabra]={'tipo':tipo,'descripcion':descripcion}
                     reportar(palabra + ' está en wiktionary')
+                    sg.PopupAnimated(image_source=None)
                     return dic
                 except: #si esta en wiktionary pero no pudo parsear la definicion y el tipo...
+                    sg.PopupAnimated(image_source=None)
                     if onPattern(palabra): 
                         tipo = clasificar(singularize(palabra)) #saca el tipo de pattern
                         if not esValido(tipo):
@@ -132,6 +135,7 @@ def buscar(palabra,dic):
                         reportar(palabra + ' no está ni en wiktionary o pattern')
                         return dic
             elif onPattern(palabra): #si fue None se pureba si esta en pattern
+                sg.PopupAnimated(image_source=None)
                 tipo = clasificar(palabra)
                 if not esValido(tipo):
                     tipo = agregarTipo()
@@ -144,7 +148,7 @@ def buscar(palabra,dic):
                 dic[palabra]={'tipo':tipo,'descripcion':descripcion}
                 return dic
             else:
+                sg.PopupAnimated(image_source=None)
                 reportar(palabra + ' no esta en wiktionary ni en pattern')
-                sg.Popup('Ingrese una palabra válida')
                 return False
         

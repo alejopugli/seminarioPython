@@ -21,10 +21,12 @@ def generar_sopa(dic,longitud,orientacion='HORIZONTAL',minusculas='MAYUSCULAS'):
     lista = list(dic.keys())
     dispersion = [True]
     m = lambda l: 1 if l >= 8 else -2 
-    #for j in range(longitud-valor(longitud,len(lista))):
     for j in range(longitud - m(longitud)):
         dispersion.append(False)
-    filas = longitud * 2
+    if longitud >= 5 :
+        filas = longitud+3
+    else:
+        filas = longitud*2
     if (minusculas == 'MINUSCULAS'):
         mayus_minus=string.ascii_lowercase
     else:
@@ -54,7 +56,10 @@ def generar_sopa(dic,longitud,orientacion='HORIZONTAL',minusculas='MAYUSCULAS'):
 
 def dibujar_sopa(matriz, g, longitud, fuente='Comic'):
     '''funcion que dibuja la sopa de letras con la matriz previamente generada'''
-    filas = longitud*2
+    if longitud >= 5 :
+        filas = longitud+2
+    else:
+        filas = longitud*2
     columnas = filas #matriz cuadrada
     for row in range(filas):
         for col in range(columnas):
@@ -106,6 +111,7 @@ def pintar(matriz,x_y,anterior,g,fuente,color='black'):
     return palabra
 
 def look(temp):
+    '''esta funcion devuelve el color a pintar en la sopa de letras según la temperatura obtenida'''
     if temp>=30:
         return 'red'
     elif temp<=13:
@@ -113,7 +119,8 @@ def look(temp):
     else:
         return 'yellow'
 
-def mapear(ofi): #arreglo de diccionar
+def mapear(ofi):
+    '''funcion encargada de devolver una lista con las temperaturas de la oficina'''
     temps = [ ]
     for i in ofi:
         temps.append(int(i['temp']))
@@ -124,10 +131,10 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
     matriz = generar_sopa(dic, longitud, orientacion, minusculas)
     lenght = (len(matriz[0])*BOX_SIZE)*2+ 15
     sopa_layout = [
-            [sg.Text('SUSTANTIVOS: '+str(contador['sustantivo'])+'  '+'ADJETIVOS: '+str(contador['adjetivo'])+'  '+'VERBOS:'+str(contador['verbo']),visible=True,key='CANTIDAD')],
-            [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO'),
-            sg.Button('AYUDA',key='HELP',visible=True),
+            [sg.Text('Faltan: '),sg.Text(str(contador['sustantivo'])+' SUSTANTIVOS'+',  '+str(contador['adjetivo'])+' ADJETIVOS'+' y  '+str(contador['verbo'])+' VERBOS',visible=True,key='CANTIDAD'),
             sg.Button('SALIR',key='EXIT',visible=False)],
+            [sg.Text('TIPO'),sg.InputCombo(values=['sustantivo','adjetivo','verbo'],size=(15,1),key='TIPO'),
+            sg.Button('AYUDA',key='HELP',visible=False)],
             [sg.Graph((lenght,lenght), (0,lenght/2), (lenght/2,0), key='_GRAPH_', change_submits=True, drag_submits=False)],
         ]
     
@@ -141,6 +148,7 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
     if ayuda == 'DESACTIVADA':
         sopa_window.FindElement('HELP').Update(visible=False)
     else:
+        sopa_window.FindElement('HELP').Update(visible=True)
         if ayuda == 'PARCIAL':
             hints = [ ]
             for i in dic.keys():
@@ -170,7 +178,8 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
             try:
                 g.DrawText('{}'.format(matriz[x_y[1]][x_y[0]]),letter_location,color=color, font=fuente+' '+str(BOX_SIZE))
             except:
-                pass
+                event, values = sopa_window.Read()
+                continue
             if palabra == '':
                 #cuando no tengo seleccion previa, agrego la primera letra
                 letra = matriz[x_y[1]][x_y[0]]
@@ -194,23 +203,23 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
                     palabra = pintar(matriz,x_y,anterior,g,fuente,color)
                     if palabra in list(dic.keys()):
                         if dic[[palabra][0]]['tipo']!=tipo:
-                            sg.Popup('¡Muy Bien! Encontraste una palabra,\npero no es un: '+tipo)
+                            sg.Popup('¡Muy Bien!', 'Encontraste la palabra '+palabra+',\npero no es un: '+tipo ,keep_on_top= True)
                             pintar(matriz,x_y,anterior,g,fuente)
                         else:
                             del dic[[palabra][0]]
                             contador[tipo] = contador[tipo]-1
                             sopa_window.FindElement('CANTIDAD').Update('SUSTANTIVOS: '+str(contador['sustantivo'])+'  '+'ADJETIVOS: '+str(contador['adjetivo'])+'  '+'VERBOS:'+str(contador['verbo']))
                             if len(dic.keys()) > 0 :
-                                sg.Popup('¡Felicitaciones! \nHaz encontrado la palabra: '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' palabras.')
+                                sg.Popup('¡Felicitaciones!','Haz encontrado la palabra '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' más.',keep_on_top= True)
                             else:
-                                sg.Popup('¡GANASTE! \n¡Haz encontrado la ultima palabra!')
+                                sg.Popup('¡GANASTE!','¡Haz encontrado la ultima palabra!',keep_on_top= True)
                                 sopa_window.FindElement('EXIT').Update(visible=True)
                                 while event != 'EXIT' and event !=None:
                                     event, values = sopa_window.Read()
                                 break
                     else :
                         pintar(matriz,x_y,anterior,g,fuente) #vuelvo a pintar pero en negro
-                        sg.Popup('Ups, "'+palabra+'" no es una palabra válida')
+                        sg.Popup('Ups, '+palabra+' no es una palabra válida',keep_on_top= True)
                     palabra = ''
             anterior = x_y
         event, values = sopa_window.Read()
