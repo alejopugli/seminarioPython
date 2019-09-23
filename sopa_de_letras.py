@@ -206,7 +206,7 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
                     palabra = pintar(matriz,x_y,anterior,g,fuente,color)
                     if palabra in list(dic.keys()):
                         if dic[[palabra][0]]['tipo']!=tipo:
-                            sg.Popup('¡Muy Bien!', 'Encontraste la palabra '+palabra+',\npero no es un '+tipo ,keep_on_top= True)
+                            sg.Popup('¡Muy Bien!', 'Encontraste la palabra '+palabra+',\npero no es un '+tipo +'.',keep_on_top= True)
                             pintar(matriz,x_y,anterior,g,fuente)
                         else:
                             del dic[[palabra][0]]
@@ -215,14 +215,14 @@ def jugar(dic, longitud, ayuda, colores, contador, oficinas, ofiAProcesar, orien
                             if len(dic.keys()) > 0 :
                                 sg.Popup('¡Felicitaciones!','Has encontrado la palabra '+ palabra +' \nsolo faltan '+ str(len(dic.keys()))+' más.',keep_on_top= True)
                             else:
-                                sg.Popup('¡GANASTE!','¡Has encontrado la ultima palabra!',keep_on_top= True)
+                                sg.Popup('¡GANASTE!','¡Has encontrado la última palabra!',keep_on_top= True)
                                 sopa_window.FindElement('EXIT').Update(visible=True)
                                 while event != 'EXIT' and event !=None:
                                     event, values = sopa_window.Read()
                                 break
                     else :
                         pintar(matriz,x_y,anterior,g,fuente) #vuelvo a pintar pero en negro
-                        sg.Popup('Ups, '+palabra+' no es una palabra válida',keep_on_top= True)
+                        sg.Popup('Ups, '+palabra+' no es una palabra válida.',keep_on_top= True)
                     palabra = ''
             anterior = x_y
         event, values = sopa_window.Read()
