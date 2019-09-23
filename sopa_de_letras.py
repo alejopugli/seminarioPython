@@ -31,9 +31,9 @@ def generar_sopa(dic,longitud,orientacion='HORIZONTAL',minusculas='MAYUSCULAS'):
         dispersion.append(False)
     filas = definirLong(longitud)
     if (minusculas == 'MINUSCULAS'):
-        mayus_minus=string.ascii_lowercase
+        mayus_minus=string.ascii_lowercase+'áéíóú'
     else:
-        mayus_minus=string.ascii_uppercase
+        mayus_minus=string.ascii_uppercase+'ÁÉÍÓÚ'
         dictKeys = [x.upper() for x in dictKeys]
     matriz = [ ]
     for i in range(filas):
