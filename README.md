@@ -1,5 +1,5 @@
 # seminarioPython
-Sopa de letras es un software educativo cuyo propósito es estimular la dialéctica de estudiantes de nivel primario de entre 6 y 12 años. 
+Sopa de letras es un software educativo cuyo propósito es estimular la dialéctica de estudiantes de nivel primario de entre 6 y 12 años. \n
 Se basa en un Configurador, que será utilizado por el docente, donde se agregarán una a una las palabras a buscar. 
 Las palabras serán validadas a traves del buscador de palabras, quién recibe la palabra y utilizando el módulo externo pattern.web y pattern.es.
 A su vez se cuenta con un JSON generado por el modulo temperatura.py, que utilizando un sensor te humedad y temperatura conectado a una Raspberry Pi 3b+. Este JSON es utilizado por la sopa de letras que tomará el color del promedio de las temperaturas captadas.
